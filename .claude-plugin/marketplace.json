@@ -1,0 +1,13 @@
+{
+  "name": "finding-unknowns",
+  "owner": {
+    "name": "droppedoutofcontext"
+  },
+  "plugins": [
+    {
+      "name": "finding-unknowns",
+      "source": "./",
+      "description": "Surface hidden requirements with small interactive HTML artifacts before, during, and after implementation."
+    }
+  ]
+}

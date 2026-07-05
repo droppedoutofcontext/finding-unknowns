@@ -1,0 +1,81 @@
+--- a/schema.sql
++++ b/schema.sql
+@@ -1,8 +1,8 @@
+ CREATE TABLE orders (
+   id BIGSERIAL PRIMARY KEY,
+-  status TEXT NOT NULL DEFAULT 'pending', -- pending | charged | failed
++  state TEXT NOT NULL DEFAULT 'pending', -- pending | charging | charged | failed
+   amount_cents INTEGER NOT NULL,
+   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+ );
+
+-CREATE INDEX idx_orders_status ON orders (status);
++CREATE INDEX idx_orders_state ON orders (state);
+--- /dev/null
++++ b/migrations/007_rename_status_to_state.sql
+@@ -0,0 +1,6 @@
++-- NOTE: deployed instances keep running while this migration applies.
++ALTER TABLE orders RENAME COLUMN status TO state;
++ALTER INDEX idx_orders_status RENAME TO idx_orders_state;
++-- introduce intermediate 'charging' state used for idempotency claims
++UPDATE orders SET state = 'pending' WHERE state IS NULL;
++
+--- a/orders.js
++++ b/orders.js
+@@ -1,25 +1,34 @@
+ const db = require('./db');
+
+-const MAX_ATTEMPTS = 3;
++const MAX_ATTEMPTS = 5;
++const BASE_DELAY_MS = 250;
+
+ async function chargeWithRetry(order) {
+   let lastErr;
+   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+     try {
+       return await chargeProvider(order);
+     } catch (err) {
++      // client errors are final: do NOT retry 4xx responses anymore
++      if (err.statusCode >= 400 && err.statusCode < 500) throw err;
+       lastErr = err;
+-      await sleep(1000); // fixed 1s between attempts, retries everything
++      const delay = BASE_DELAY_MS * 2 ** (attempt - 1);
++      await sleep(delay + Math.random() * delay); // exponential + full jitter
+     }
+   }
+   throw lastErr;
+ }
+
+ async function processOrder(orderId) {
+-  const order = await db.one('SELECT * FROM orders WHERE id = $1', [orderId]);
+-  if (order.status !== 'pending') return { skipped: true };
++  // idempotency claim: only one worker can move pending -> charging
++  const claimed = await db.result(
++    "UPDATE orders SET state = 'charging' WHERE id = $1 AND state = 'pending'",
++    [orderId],
++  );
++  if (claimed.rowCount === 0) return { skipped: true };
++  const order = await db.one('SELECT * FROM orders WHERE id = $1', [orderId]);
+   const receipt = await chargeWithRetry(order);
+-  await db.none('UPDATE orders SET status = $1 WHERE id = $2', ['charged', orderId]);
++  await db.none('UPDATE orders SET state = $1 WHERE id = $2', ['charged', orderId]);
+   return { receipt };
+ }
+--- a/worker.js
++++ b/worker.js
+@@ -4,14 +4,14 @@ const { processOrder } = require('./orders');
+ // polls every 5s; many instances run in parallel behind a lock
+ async function tick() {
+   const rows = await db.any(
+-    "SELECT id FROM orders WHERE status = 'pending' ORDER BY created_at LIMIT 50",
++    "SELECT id FROM orders WHERE state = 'pending' ORDER BY created_at LIMIT 50",
+   );
+   for (const row of rows) {
+     try {
+       await processOrder(row.id);
+     } catch (err) {
+-      await db.none('UPDATE orders SET status = $1 WHERE id = $2', ['failed', row.id]);
++      await db.none('UPDATE orders SET state = $1 WHERE id = $2', ['failed', row.id]);
+     }
+   }
+ }

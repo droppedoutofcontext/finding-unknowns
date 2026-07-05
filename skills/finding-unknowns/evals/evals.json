@@ -1,0 +1,57 @@
+{
+  "skill_name": "finding-unknowns",
+  "evals": [
+    {
+      "id": 0,
+      "name": "vague-aesthetic-landing-redesign",
+      "prompt": "here's my landing page (landing.html in the working directory) — it looks kinda amateur and i want it to look more professional, but honestly i'm not sure exactly what's wrong with it. can you improve it?",
+      "expected_output": "Instead of silently rewriting the page, the agent produces a self-contained interactive HTML artifact (design directions and/or a teach-me explainer) that shows distinct visual options, lets the user select what resonates, and assembles a copyable reply/prompt from the selections.",
+      "files": ["inputs/landing.html"],
+      "assertions": [
+        "Produces at least one self-contained interactive HTML artifact (inline CSS/JS, no external CDN/network dependencies)",
+        "Surfaces multiple distinct visual directions or teachable visual concepts for the user to choose from, rather than committing to a single silent redesign",
+        "Artifact contains selection controls (chips/checkboxes/toggles/sliders) whose state feeds an assembled, copyable reply or follow-up prompt",
+        "Does not present a finished redesigned landing page as the final answer without first extracting the user's preferences"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "ambiguous-feature-interview",
+      "prompt": "I want to add a share-via-link feature to my QA reports web app, so a team lead can send a report to developers who don't have accounts. I haven't really thought through the details — help me pin this down before we build anything.",
+      "expected_output": "The agent produces a self-contained interactive HTML interview artifact: questions ordered by architectural blast radius (auth/expiry/scope before cosmetics), a decisions table that fills in as the user answers, and a ready-to-paste implementation prompt assembled from the answers.",
+      "files": [],
+      "assertions": [
+        "Produces at least one self-contained interactive HTML artifact (inline CSS/JS, no external CDN/network dependencies)",
+        "Questions are ordered by architectural blast radius: access/auth model, expiry/revocation, and data scope appear before cosmetic or copy-level questions",
+        "Artifact includes a decisions table or summary that fills in live as the user answers",
+        "Artifact assembles a ready-to-paste implementation prompt (or equivalent copyable reply) from the user's answers"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "impl-notes-plan-vs-reality",
+      "prompt": "Implement rate limiting in my mini-api project exactly per plan.md (fixture provided). Heads up: this is attempt #1 — I fully expect reality to disagree with the plan somewhere, and I want to be able to learn from whatever you hit.",
+      "expected_output": "The agent implements the feature while keeping an implementation-notes artifact: the plan-vs-reality deviations (JSON config vs YAML) logged with conservative calls, the premise break (plan assumes a database, project is file-store only) surfaced prominently, and ~3 bullets for attempt #2 at the end.",
+      "files": ["inputs/notes-fixture/"],
+      "assertions": [
+        "Keeps an implementation-notes artifact (md or html) with per-deviation entries: what the plan said, what was actually true, and the conservative call made",
+        "Logs the config JSON-vs-YAML mismatch as a deviation with a conservative call, rather than silently adapting",
+        "Surfaces the missing-database premise break prominently (flagged to the user, not buried as a routine workaround among minor notes)",
+        "Notes end with a few (~3) bullets to fold into attempt #2"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "merge-readiness-quiz",
+      "prompt": "I'm about to merge this change to our order-processing worker (repo/ + diff.patch provided). Honestly I only skimmed the diff. Am I ready to merge?",
+      "expected_output": "The agent produces a self-contained interactive HTML merge-readiness report grouped by risk, ending in a ~6-question quiz whose wrong answers link back to the relevant section, covering the planted subtleties (in-flight jobs during the column rename; 4xx no longer retried), and assembling a copyable reply from the result.",
+      "files": ["inputs/quiz-fixture/"],
+      "assertions": [
+        "Produces a self-contained interactive HTML merge-readiness report ending in a quiz (~6 questions) with pass/fail feedback",
+        "Report is grouped by risk, not by file, and wrong answers point back to the relevant report section",
+        "Quiz covers the planted subtleties: in-flight jobs during the status->state column rename, and 4xx responses no longer being retried",
+        "Assembles a copyable reply: quiz outcome plus sections flagged for re-reading (or 'passed — merging')"
+      ]
+    }
+  ]
+}

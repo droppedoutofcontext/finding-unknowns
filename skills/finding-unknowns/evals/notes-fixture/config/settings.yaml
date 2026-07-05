@@ -1,0 +1,6 @@
+# Runtime settings. NOTE: we migrated off JSON config in March — YAML only.
+port: 8080
+logLevel: info
+cors:
+  origins:
+    - https://app.example.com

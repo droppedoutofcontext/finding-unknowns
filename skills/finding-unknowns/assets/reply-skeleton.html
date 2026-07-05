@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><!-- set to the user's language -->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARTIFACT TITLE</title>
+<style>
+  /* Minimal neutral base — restyle freely, keep everything inline. */
+  :root{
+    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea; --acc:#4f46e5;
+    --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
+  h1{font-size:21px;margin:0 0 6px}
+  .lede{color:var(--mut);margin:0 0 20px;max-width:70ch}
+
+  /* --- tri-state chip: neutral -> steal ("take it") -> skip ("definitely not") --- */
+  .chip{display:inline-flex;align-items:center;gap:6px;margin:0 6px 8px 0;padding:6px 11px;
+        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:13px;cursor:pointer}
+  .chip .ic{font-size:11px;width:13px;text-align:center;color:var(--mut)}
+  .chip.steal{border-color:var(--steal);background:var(--steal-bg);color:var(--steal)}
+  .chip.skip{border-color:var(--skip);background:var(--skip-bg);color:var(--skip);text-decoration:line-through}
+
+  /* --- assembled reply block --- */
+  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
+  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;
+        padding:12px 14px;font:13.5px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 14px;
+        margin-top:10px;font:inherit}
+  .copy{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:11px 22px;
+        font-size:14.5px;font-weight:600;cursor:pointer;margin-top:12px}
+  .copied{color:var(--steal);font-weight:600;opacity:0;transition:opacity .2s;margin-left:10px}
+  .copied.on{opacity:1}
+</style>
+</head>
+<body>
+<h1>ARTIFACT TITLE</h1>
+<p class="lede">One sentence: what decision this artifact extracts from the user.</p>
+
+<!-- ============================================================
+     YOUR CONTENT HERE. Give every selectable trait a .chip with a
+     data-trait (text that goes into the reply) and optionally a
+     data-group (where it came from, e.g. a direction's name).
+     Order sections by decision impact: big calls first.
+     ============================================================ -->
+<div>
+  <span class="chip" data-trait="example trait one"><span class="ic">·</span>trait one</span>
+  <span class="chip" data-trait="example trait two" data-group="direction B"><span class="ic">·</span>trait two</span>
+</div>
+
+<!-- --- assembled reply: keep the ids (out, extra, copyBtn, copied) verbatim --- -->
+<div class="reply">
+  <h2>Your next message — written for you</h2>
+  <textarea id="out" readonly>Nothing selected yet — click through the options above.</textarea>
+  <input id="extra" placeholder="Anything else you noticed? (free note — goes into the reply)">
+  <div>
+    <button class="copy" id="copyBtn">Copy reply</button>
+    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  // trait text -> {group, mode: 'steal' | 'skip'}
+  var state = {};
+
+  function rebuild() {
+    // ADAPT THIS: compose the reply from `state` in the user's language.
+    var steals = [], skips = [];
+    Object.keys(state).forEach(function (t) {
+      var s = state[t];
+      var label = s.group ? t + ' (' + s.group + ')' : t;
+      (s.mode === 'steal' ? steals : skips).push(label);
+    });
+    var lines = [];
+    if (steals.length) lines.push('Take: ' + steals.join('; ') + '.');
+    if (skips.length) lines.push('Definitely not: ' + skips.join('; ') + '.');
+    var extra = document.getElementById('extra').value.trim();
+    if (extra) lines.push('Also: ' + extra);
+    document.getElementById('out').value =
+      lines.join('\n') || 'Nothing selected yet — click through the options above.';
+  }
+
+  // tri-state cycle: neutral -> steal -> skip -> neutral
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var t = c.dataset.trait;
+      var cur = state[t] && state[t].mode;
+      var next = !cur ? 'steal' : (cur === 'steal' ? 'skip' : null);
+      c.classList.remove('steal', 'skip');
+      if (next) { state[t] = { group: c.dataset.group || '', mode: next }; c.classList.add(next); }
+      else delete state[t];
+      c.querySelector('.ic').textContent = next === 'steal' ? '✓' : (next === 'skip' ? '✕' : '·');
+      rebuild();
+    });
+  });
+
+  document.getElementById('extra').addEventListener('input', rebuild);
+
+  // Resilient copy: clipboard API often fails in sandboxed viewers and on
+  // some file:// setups — always fall back to select()+execCommand, and the
+  // textarea stays selectable for a manual copy as the last resort.
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var out = document.getElementById('out');
+    function done() {
+      var el = document.getElementById('copied');
+      el.classList.add('on');
+      setTimeout(function () { el.classList.remove('on'); }, 2200);
+    }
+    function legacy() {
+      out.removeAttribute('readonly'); out.select();
+      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
+      out.setAttribute('readonly', ''); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(out.value).then(done, legacy);
+    else legacy();
+  });
+})();
+</script>
+</body>
+</html>
