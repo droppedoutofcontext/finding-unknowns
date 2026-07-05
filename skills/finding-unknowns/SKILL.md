@@ -104,7 +104,12 @@ actually read.
    control (checkbox, steal/skip chip, toggle, slider, radio) feeds a live
    "assembled reply" textarea with a copy button — the user clicks through,
    copies, pastes back, and you receive a precise prompt instead of a shrug.
-   An artifact that doesn't produce the next prompt is a dead end. Copy must
+   An artifact that doesn't produce the next prompt is a dead end. The
+   artifact also explains its own game, quietly: the lede names the decision
+   being extracted, a muted one-line hint explains the controls and that the
+   assembled reply gets pasted back, and a collapsed "What is this?" holds
+   the technique description — a first-time user must be able to play
+   without the chat open. Copy must
    work everywhere: try the clipboard API, fall back to
    `select()` + `execCommand('copy')`, and leave the textarea selectable for
    a manual copy — sandboxed viewers block the clipboard API silently. Start
@@ -122,10 +127,25 @@ actually read.
    "what style?". Teach the professional vocabulary while you're at it, so
    the user's *next* prompt can be precise.
 
-5. **Throwaway fidelity.** The mock only needs to be real enough to answer
+5. **Quiet chrome, faithful content.** The artifact's own UI is a form the
+   user fills, not a poster. Keep the skeleton's design system untouched:
+   one font stack, its three text sizes, monochrome chrome where color
+   appears only as the user's own decision state (steal / skip / selected)
+   and never as decoration, whitespace over boxes, no gradients or shadows.
+   Extra styling lives only *inside* `.preview` regions — and there it
+   isn't free creativity either: a preview depicts the thing being decided,
+   in its style — the project's real look (placement mocks, before/afters)
+   or a candidate look proposed for it (design directions), never a generic
+   demo UI. All microcopy — hints, labels, the assembled reply — is plain
+   prose: no arrow chains, no glyph shorthand, no lists glued together with
+   semicolons. Short sentences or bullet lists instead. Every extra font
+   size, color, or notation in the chrome is cognitive load spent on
+   parsing instead of deciding.
+
+6. **Throwaway fidelity.** The mock only needs to be real enough to answer
    the question it was built for. Don't wire real data into a placement test.
 
-6. **Verify before handing over.** Run
+7. **Verify before handing over.** Run
    `node scripts/verify_artifact.mjs <file>`
    ([source](scripts/verify_artifact.mjs)) — or equivalent checks if node is
    unavailable: inline JS parses, every id referenced from JS exists in the
@@ -142,7 +162,13 @@ actually read.
    decision it's meant to extract.
 4. The user interacts and pastes back the assembled reply.
 5. Fold the answers into the implementation prompt (or the plan, or the PR)
-   and proceed. For a big build, suggest starting implementation in a fresh
+   and proceed. One exception before coding: if the accepted decisions were
+   composed from pieces of different options ("B, but A's header and D's
+   density") and redoing is expensive, nobody has actually seen that
+   combination — re-render it once as a final mock for sign-off, one round
+   of tweaks at most. For web UIs a mock costs about as much as the real
+   thing, so implement on a branch and show it live instead. For a big
+   build, suggest starting implementation in a fresh
    session whose prompt is the artifacts themselves — the spec, the
    prototype, the decisions table, the notes from the previous attempt;
    planning context is noise once building starts. During long builds, keep

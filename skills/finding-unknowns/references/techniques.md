@@ -3,7 +3,7 @@
 Eleven artifact blueprints, grouped by phase. Each entry: when to use it, what
 to build, and what reply the artifact must assemble for the user. All of them
 obey the global rules in SKILL.md (self-contained HTML, assembled-reply box,
-impact-first ordering).
+impact-first ordering, quiet chrome).
 
 ---
 

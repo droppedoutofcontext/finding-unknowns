@@ -5,44 +5,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ARTIFACT TITLE</title>
 <style>
-  /* Minimal neutral base — restyle freely, keep everything inline. */
+  /* Design contract — quiet chrome, faithful content. Keep this system
+     as-is: one font stack, three text sizes (18/14.5/12.5), monochrome
+     chrome — color appears ONLY as the user's own decision state (steal /
+     skip / selected), never as decoration — whitespace over boxes, no
+     gradients or shadows. Extra styles live only INSIDE .preview regions,
+     and they are not free creativity — a .preview depicts the thing being
+     decided: the project's real look (placement mocks, before/afters) or a
+     candidate look proposed for it (design directions). Never a generic
+     demo UI. */
   :root{
-    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea; --acc:#4f46e5;
+    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
     --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
   }
   *{box-sizing:border-box}
   body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
        color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
-  h1{font-size:21px;margin:0 0 6px}
-  .lede{color:var(--mut);margin:0 0 20px;max-width:70ch}
+  h1{font-size:18px;margin:0 0 6px}
+  h2{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--mut);margin:32px 0 10px}
+  .lede{color:var(--mut);margin:0 0 8px;max-width:70ch}
+  .sub{color:var(--mut);font-size:12.5px}
+  .hint{margin:0 0 6px;max-width:70ch}
+  details.how{margin:0 0 24px;font-size:12.5px;color:var(--mut);max-width:70ch}
+  details.how summary{cursor:pointer;width:max-content}
+  details.how p{margin:8px 0 0}
+
+  /* --- layout: white cards on the quiet background, one gap size --- */
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+
+  /* --- selectable option card (interview answers, placements, verdicts) --- */
+  .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
+       padding:12px 14px;font:inherit;text-align:left;width:100%}
+  .opt.sel{border-color:var(--ink);background:#f1f1ee}
+
+  /* --- framed region for demo content; style freely INSIDE it only --- */
+  .preview{border:1px dashed var(--line);border-radius:8px;background:#fff;overflow:hidden}
 
   /* --- tri-state chip: neutral -> steal ("take it") -> skip ("definitely not") --- */
   .chip{display:inline-flex;align-items:center;gap:6px;margin:0 6px 8px 0;padding:6px 11px;
-        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:13px;cursor:pointer}
+        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer}
   .chip .ic{font-size:11px;width:13px;text-align:center;color:var(--mut)}
   .chip.steal{border-color:var(--steal);background:var(--steal-bg);color:var(--steal)}
   .chip.skip{border-color:var(--skip);background:var(--skip-bg);color:var(--skip);text-decoration:line-through}
 
   /* --- assembled reply block --- */
-  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px}
-  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:10px;
-        padding:12px 14px;font:13.5px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
-  .reply input{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 14px;
+  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+  .reply h2,.card h2{margin-top:0}
+  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;
+        padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 14px;
         margin-top:10px;font:inherit}
-  .copy{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:11px 22px;
-        font-size:14.5px;font-weight:600;cursor:pointer;margin-top:12px}
-  .copied{color:var(--steal);font-weight:600;opacity:0;transition:opacity .2s;margin-left:10px}
+  .copy{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:10px 20px;
+        font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
+  .copied{color:var(--steal);font-weight:600;font-size:12.5px;opacity:0;transition:opacity .2s;margin-left:10px}
   .copied.on{opacity:1}
 </style>
 </head>
 <body>
 <h1>ARTIFACT TITLE</h1>
 <p class="lede">One sentence: what decision this artifact extracts from the user.</p>
+<p class="sub hint">The mechanics in plain prose, e.g.: Click a chip once to
+take that element, twice to reject it, a third click clears it. Your reply
+assembles itself at the bottom. Copy it and paste it back into the chat.</p>
+<details class="how">
+  <summary>What is this?</summary>
+  <p>Two–three sentences on the technique itself: why this artifact exists,
+  what kind of unknown it surfaces, and why answering here beats answering
+  in chat. Written for a first-time user with zero context.</p>
+</details>
 
 <!-- ============================================================
-     YOUR CONTENT HERE. Give every selectable trait a .chip with a
-     data-trait (text that goes into the reply) and optionally a
-     data-group (where it came from, e.g. a direction's name).
+     YOUR CONTENT HERE. Build sections as h2 + .card/.grid; put any
+     rendered demo inside a .preview. Give every selectable trait a
+     .chip with a data-trait (text that goes into the reply) and
+     optionally a data-group (where it came from, e.g. a direction's
+     name); use .opt for pick-one option cards.
      Order sections by decision impact: big calls first.
      ============================================================ -->
 <div>
@@ -76,12 +115,12 @@
       (s.mode === 'steal' ? steals : skips).push(label);
     });
     var lines = [];
-    if (steals.length) lines.push('Take: ' + steals.join('; ') + '.');
-    if (skips.length) lines.push('Definitely not: ' + skips.join('; ') + '.');
+    if (steals.length) lines.push('Take:\n- ' + steals.join('\n- '));
+    if (skips.length) lines.push('Definitely not:\n- ' + skips.join('\n- '));
     var extra = document.getElementById('extra').value.trim();
     if (extra) lines.push('Also: ' + extra);
     document.getElementById('out').value =
-      lines.join('\n') || 'Nothing selected yet — click through the options above.';
+      lines.join('\n\n') || 'Nothing selected yet — click through the options above.';
   }
 
   // tri-state cycle: neutral -> steal -> skip -> neutral
