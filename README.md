@@ -22,42 +22,25 @@ teaches the vocabulary, then builds the redesign brief from your clicks.</sub>
 
 </div>
 
-## The idea
-
-People are bad at *stating* their standards but great at *recognizing* them — show four rendered
-designs and they point instantly; ask "what style?" and they shrug. Each technique turns that
-recognition into a spec:
-
-```mermaid
-flowchart LR
-  A["vague prompt"] --> B["interactive<br/>HTML artifact"] --> C["you click what<br/>you recognize"] --> D["artifact writes<br/>your reply"] --> E["precise spec"]
-```
-
-The gap has four parts; quality is bottlenecked by the two you can't just be asked about:
-
-| | you know it | you don't |
-|---|---|---|
-| **user knows it** | already in the prompt | **unstated taste & house rules** |
-| **user doesn't** | open questions | **factors nobody considered** |
-
 ## Techniques
 
-Claude picks the one that fits and builds an artifact for it. Blueprints in
-[`SKILL.md`](skills/finding-unknowns/SKILL.md).
+People are bad at *stating* their standards but great at *recognizing* them — show four rendered
+designs and they point instantly; ask "what style?" and they shrug. Claude picks the technique that
+fits and builds an artifact for it. Blueprints in [`SKILL.md`](skills/finding-unknowns/SKILL.md).
 
 | Phase | Technique | What it pulls out of your head |
 |-------|-----------|--------------------------------|
-| Pre | Blindspot pass | your unknown unknowns, as copyable prompt fixes |
-| Pre | Teach me my unknowns | the vocabulary for taste you can't articulate |
-| Pre | Four design directions | which rendered look you point at (steal/skip per element) |
-| Pre | Mock before you wire | placement & interaction, before real code |
-| Pre | Brainstorm on an effort axis | which interventions resonate, afternoon → quarter |
-| Pre | The interview | decisions ordered by architectural blast radius |
-| Pre | Point at a reference | proof the reference was understood before porting |
-| Pre | The tweakable plan | plan sign-off, sorted by likelihood-of-tweaking |
-| During | Implementation notes | every plan-vs-reality deviation + bullets for attempt #2 |
+| Pre | Blindspot pass | unknown unknowns → prompt fixes |
+| Pre | Teach me my unknowns | vocabulary for taste you can't name |
+| Pre | Four design directions | point at a look; steal/skip per element |
+| Pre | Mock before you wire | placement & interaction, before code |
+| Pre | Brainstorm on an effort axis | what lands: afternoon → quarter |
+| Pre | The interview | decisions by architectural blast radius |
+| Pre | Point at a reference | prove the reference is understood first |
+| Pre | The tweakable plan | plan sign-off, ranked by tweak-likelihood |
+| During | Implementation notes | plan-vs-reality gaps, saved for attempt #2 |
 | Post | The buy-in doc | reviewer objections, pre-answered |
-| Post | Quiz me before I merge | whether *you* understand your own diff |
+| Post | Quiz me before I merge | do *you* understand your own diff? |
 
 ## Install
 
@@ -80,23 +63,10 @@ technique or the skill:
 
 ## Does it work?
 
-Four realistic tasks, four binary checks each, one run per configuration:
-
-| Task | with skill | baseline |
-|------|:---:|:---|
-| vague aesthetic ask | **4/4** | 0/4 — silent redesign with invented facts |
-| ambiguous feature | **4/4** | 1/4 — static decision sheet, no loop |
-| implementation notes | **4/4** | 2/4 — learnings stuck in chat, lost for attempt #2 |
-| merge quiz | **4/4** | 0/4 — good review, no comprehension check |
-
-Baselines often *find* the same problems — the skill's edge is the loop, not raw insight: it turns
+Four realistic tasks, four binary checks each — **16/16** with the skill vs **3/16** baseline.
+Baselines often *find* the same problems; the skill's edge is the loop, not raw insight — it turns
 findings into your decisions and your next prompt instead of a wall of text. Small sample; rerun via
 [`evals/`](skills/finding-unknowns/evals/evals.json). Tested on Fable 5 and Opus 4.8.
-
-<div align="center">
-<img src="docs/merge-quiz.webp" width="720" alt="Merge-readiness artifact: verdict banner, risk-grouped blockers, and a six-question quiz">
-<br><sub>A post-implementation artifact: risk-grouped review + a quiz you must pass before merging.</sub>
-</div>
 
 ## Credits
 
