@@ -9,6 +9,8 @@
 [![Evals: 16/16 vs 3/16](https://img.shields.io/badge/evals-16%2F16_vs_3%2F16_baseline-177245)](#does-it-work)
 [![Ideas by @trq212](https://img.shields.io/badge/ideas_by-%40trq212-1c9bf0)](https://x.com/trq212/article/2073100352921215386)
 
+**English** · [Русский](README.ru.md)
+
 A [Claude Code](https://claude.com/claude-code) skill that turns vague prompts into precise specs.
 Instead of guessing and building, Claude spends a few cheap minutes on a small **interactive HTML
 artifact** that helps you *recognize* what you couldn't state — then **writes your next prompt for you.**
