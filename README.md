@@ -15,7 +15,7 @@ A [Claude Code](https://claude.com/claude-code) skill that turns vague prompts i
 Instead of guessing and building, Claude spends a few cheap minutes on a small **interactive HTML
 artifact** that helps you *recognize* what you couldn't state — then **writes your next prompt for you.**
 
-<img src="docs/four-directions.gif" width="820" alt="Animated schematic: four wireframe dashboard directions, one element highlighted in each, assembling into a single dashboard">
+<img src="docs/four-directions.gif" width="820" alt="Animated walkthrough: a stuck guessing loop, then /plugin install, then four colored dashboard directions where you take the pieces you like — one marked 'definitely not' — and they assemble into one">
 
 <sub>The *four design directions* technique: four honest takes on one dashboard — you point at the pieces
 you like, the artifact assembles them into one and writes your next prompt.</sub>
