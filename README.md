@@ -15,10 +15,10 @@ A [Claude Code](https://claude.com/claude-code) skill that turns vague prompts i
 Instead of guessing and building, Claude spends a few cheap minutes on a small **interactive HTML
 artifact** that helps you *recognize* what you couldn't state — then **writes your next prompt for you.**
 
-<img src="docs/teach-me.webp" width="820" alt="Interactive explainer: side-by-side fixes for a landing page with sliders and an auto-assembled brief">
+<img src="docs/four-directions.gif" width="820" alt="Animated schematic: four wireframe dashboard directions, one element highlighted in each, assembling into a single dashboard">
 
-<sub>Real artifact from the evals: *"my landing page looks amateur, not sure why"* → an explainer that
-teaches the vocabulary, then builds the redesign brief from your clicks.</sub>
+<sub>The *four design directions* technique: four honest takes on one dashboard — you point at the pieces
+you like, the artifact assembles them into one and writes your next prompt.</sub>
 
 </div>
 
