@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>TaskFlow - The Best Project Management Tool!!</title>
+<style>
+  body { font-family: Arial; margin: 0; background: #ffffff; }
+  .header { background: linear-gradient(to right, #ff6600, #0066ff); padding: 10px; text-align: center; }
+  .header h1 { color: white; font-size: 48px; text-shadow: 3px 3px 5px #000000; margin: 5px; }
+  .header p { color: yellow; font-size: 22px; font-weight: bold; font-style: italic; }
+  .nav { text-align: center; background: #333; padding: 5px; }
+  .nav a { color: #00ff00; margin: 0 15px; font-size: 18px; }
+  .section { text-align: center; padding: 15px; }
+  .section h2 { color: #0066ff; font-size: 32px; text-decoration: underline; }
+  .features { width: 90%; margin: auto; }
+  .features td { border: 2px solid #ff6600; padding: 8px; text-align: center; font-size: 15px; }
+  .cta-button { background: red; color: white; font-size: 26px; padding: 18px 30px; border-radius: 50px;
+                border: 4px dashed yellow; cursor: pointer; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.5; } }
+  .testimonial { background: #ffffcc; border: 1px solid black; margin: 10px; padding: 10px;
+                 font-family: "Comic Sans MS", cursive; }
+  .footer { background: black; color: #cccccc; font-size: 11px; text-align: center; padding: 8px; }
+  marquee { color: red; font-weight: bold; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>TaskFlow</h1>
+  <p>The #1 BEST project management solution for teams of ALL sizes!!!</p>
+</div>
+
+<div class="nav">
+  <a href="#features">Features</a> | <a href="#pricing">Pricing</a> |
+  <a href="#testimonials">Reviews</a> | <a href="#signup">SIGN UP NOW</a>
+</div>
+
+<marquee>*** LIMITED TIME OFFER: 50% off your first month! Don't miss out!! ***</marquee>
+
+<div class="section">
+  <h2>Why Choose TaskFlow???</h2>
+  <p>TaskFlow is a revolutionary cutting-edge platform that leverages synergy to empower your team
+  to achieve maximum productivity and take your business to the NEXT LEVEL.</p>
+  <img src="hero-screenshot.png" alt="screenshot" width="600" style="border: 5px ridge gray;">
+</div>
+
+<div class="section" id="features">
+  <h2>Amazing Features</h2>
+  <table class="features" align="center">
+    <tr>
+      <td><b>Task Boards</b><br>Drag and drop tasks easily</td>
+      <td><b>Time Tracking</b><br>Track every minute</td>
+      <td><b>Reports</b><br>Beautiful charts and graphs</td>
+    </tr>
+    <tr>
+      <td><b>Team Chat</b><br>Communicate in real time</td>
+      <td><b>Integrations</b><br>Works with 100+ tools</td>
+      <td><b>Mobile App</b><br>Coming soon!</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" id="testimonials">
+  <h2>What Our Customers Say</h2>
+  <div class="testimonial">"TaskFlow changed my life! I can't imagine working without it." - John S.</div>
+  <div class="testimonial">"Simply the best tool out there. 10/10 would recommend!!" - Sarah from Texas</div>
+</div>
+
+<div class="section" id="signup">
+  <h2>Ready To Get Started?</h2>
+  <button class="cta-button" onclick="alert('Thanks for signing up!')">START YOUR FREE TRIAL NOW!!!</button>
+  <p style="font-size: 12px; color: gray;">No credit card required (for the first 7 days)</p>
+</div>
+
+<div class="footer">
+  Copyright 2024 TaskFlow Inc. All rights reserved. | Terms | Privacy | Contact: taskflow@gmail.com
+</div>
+
+</body>
+</html>
