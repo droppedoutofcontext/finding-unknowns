@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Share-via-link — the interview</title>
+<style>
+  :root{
+    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
+    --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
+  h1{font-size:18px;margin:0 0 6px}
+  h2{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--mut);margin:32px 0 10px}
+  .lede{color:var(--mut);margin:0 0 8px;max-width:70ch}
+  .sub{color:var(--mut);font-size:12.5px}
+  .hint{margin:0 0 6px;max-width:70ch}
+  details.how{margin:0 0 24px;font-size:12.5px;color:var(--mut);max-width:70ch}
+  details.how summary{cursor:pointer;width:max-content}
+  details.how p{margin:8px 0 0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
+       padding:12px 14px;font:inherit;text-align:left;width:100%}
+  .opt.sel{border-color:var(--ink);background:#f1f1ee}
+  .opt .why-opt{display:block;color:var(--mut);font-size:12.5px;margin-top:4px}
+  .qnote{color:var(--mut);font-size:12.5px;margin:6px 0 10px;max-width:70ch}
+  table.dec{border-collapse:collapse;width:100%;font-size:13px}
+  table.dec td,table.dec th{border-top:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table.dec th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);
+               font-weight:600;border-top:0}
+  table.dec td.val{color:var(--mut)}
+  table.dec td.val.set{color:var(--ink);font-weight:600}
+  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+  .reply h2,.card h2{margin-top:0}
+  .reply textarea{width:100%;min-height:190px;border:1px solid var(--line);border-radius:8px;
+        padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+        margin-top:10px;font:inherit}
+  .copy{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:10px 20px;
+        font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
+  .copied{color:var(--steal);font-weight:600;font-size:12.5px;opacity:0;transition:opacity .2s;margin-left:10px}
+  .copied.on{opacity:1}
+</style>
+</head>
+<body>
+<h1>Share-via-link for QA reports — the interview</h1>
+<p class="lede">You asked for "share a report with developers who don't have accounts" and left the
+details open. These five questions are the details that have architectural cost if guessed wrong —
+ordered so the biggest one comes first.</p>
+<p class="sub hint">Pick one answer per question; each card says what choosing it commits you to.
+"You decide" is a real answer — it means you're delegating that call on purpose. The decisions
+table and your reply fill in as you go. Copy the reply at the bottom and paste it back into the
+chat.</p>
+<details class="how">
+  <summary>What is this?</summary>
+  <p>A live example from the finding-unknowns skill. For an ambiguous feature, the expensive
+  unknowns are the questions the builder would otherwise answer silently with assumptions. This
+  artifact asks them in order of blast radius — storage and auth before cosmetics — and turns your
+  clicks into a ready-to-paste implementation prompt.</p>
+</details>
+
+<h2>1 · Who can open a shared link?</h2>
+<p class="qnote">The biggest call: it decides whether shared reports need their own auth path, and
+whether a leaked URL is an incident.</p>
+<div class="grid">
+  <button class="opt" data-group="access model" data-value="anyone with the link (unguessable token)">
+    Anyone with the link
+    <span class="why-opt">unguessable token in the URL; simplest, but a forwarded link is an open door</span></button>
+  <button class="opt" data-group="access model" data-value="anyone with the link, but each recipient verifies their email once">
+    Link + one-time email check
+    <span class="why-opt">recipients prove an email before first view; adds a verification flow and a recipients table</span></button>
+  <button class="opt" data-group="access model" data-value="only pre-listed recipient emails">
+    Pre-listed recipients only
+    <span class="why-opt">sender names the emails up front; safest, most friction, closest to real accounts</span></button>
+  <button class="opt" data-group="access model" data-value="you decide">
+    You decide
+    <span class="why-opt">delegate this on purpose — the builder picks and says why</span></button>
+</div>
+
+<h2>2 · Do links expire, and can they be revoked?</h2>
+<p class="qnote">Decides whether tokens are stateless or need a lookup table you can delete from.</p>
+<div class="grid">
+  <button class="opt" data-group="expiry and revocation" data-value="links expire after 7 days, no revocation">
+    Expire after 7 days
+    <span class="why-opt">stateless signed token; nothing to store, nothing to revoke early</span></button>
+  <button class="opt" data-group="expiry and revocation" data-value="sender sets expiry per link and can revoke any link">
+    Sender-set expiry + revoke
+    <span class="why-opt">needs a shares table and a management UI, but leaks can be shut off</span></button>
+  <button class="opt" data-group="expiry and revocation" data-value="links never expire but can be revoked">
+    Never expire, revocable
+    <span class="why-opt">convenient for long-lived reports; the shares table grows forever</span></button>
+  <button class="opt" data-group="expiry and revocation" data-value="you decide">
+    You decide
+    <span class="why-opt">delegate this on purpose</span></button>
+</div>
+
+<h2>3 · How much of the report does a link show?</h2>
+<p class="qnote">QA reports carry internal notes and reporter names — decide what crosses the wall.</p>
+<div class="grid">
+  <button class="opt" data-group="shared data scope" data-value="the full report, exactly as team members see it">
+    The full report
+    <span class="why-opt">one render path; internal comments and names go to outsiders</span></button>
+  <button class="opt" data-group="shared data scope" data-value="the report without internal comments and assignee names">
+    Report minus internal fields
+    <span class="why-opt">needs a redaction layer and a second render path to test</span></button>
+  <button class="opt" data-group="shared data scope" data-value="a summary view only: totals, statuses, and titles">
+    Summary view only
+    <span class="why-opt">smallest surface; developers may still need the details behind it</span></button>
+  <button class="opt" data-group="shared data scope" data-value="you decide">
+    You decide
+    <span class="why-opt">delegate this on purpose</span></button>
+</div>
+
+<h2>4 · What can a recipient do with it?</h2>
+<div class="grid">
+  <button class="opt" data-group="recipient capabilities" data-value="view only">
+    View only
+    <span class="why-opt">read-only page, no write path from unauthenticated users</span></button>
+  <button class="opt" data-group="recipient capabilities" data-value="view and comment">
+    View and comment
+    <span class="why-opt">outsiders write into your data model — spam and identity questions arrive with it</span></button>
+  <button class="opt" data-group="recipient capabilities" data-value="view and export to PDF">
+    View and export
+    <span class="why-opt">adds an export pipeline; the report will be forwarded as a file anyway</span></button>
+  <button class="opt" data-group="recipient capabilities" data-value="you decide">
+    You decide
+    <span class="why-opt">delegate this on purpose</span></button>
+</div>
+
+<h2>5 · Does the sender see what happens to the link?</h2>
+<p class="qnote">Smallest blast radius — last on purpose.</p>
+<div class="grid">
+  <button class="opt" data-group="visibility for the sender" data-value="no tracking">
+    No tracking
+    <span class="why-opt">nothing to build, nothing to explain in a privacy note</span></button>
+  <button class="opt" data-group="visibility for the sender" data-value="notify the sender on first open">
+    Notify on first open
+    <span class="why-opt">one event and one email; answers "did they even look?"</span></button>
+  <button class="opt" data-group="visibility for the sender" data-value="a per-link view log">
+    Full view log
+    <span class="why-opt">a views table and a small UI; borders on surveillance for a QA report</span></button>
+  <button class="opt" data-group="visibility for the sender" data-value="you decide">
+    You decide
+    <span class="why-opt">delegate this on purpose</span></button>
+</div>
+
+<h2>Decisions so far</h2>
+<div class="card">
+  <table class="dec">
+    <tr><th>Question</th><th>Your call</th></tr>
+    <tr><td>Access model</td><td class="val" id="d-q1">—</td></tr>
+    <tr><td>Expiry and revocation</td><td class="val" id="d-q2">—</td></tr>
+    <tr><td>Shared data scope</td><td class="val" id="d-q3">—</td></tr>
+    <tr><td>Recipient capabilities</td><td class="val" id="d-q4">—</td></tr>
+    <tr><td>Visibility for the sender</td><td class="val" id="d-q5">—</td></tr>
+  </table>
+</div>
+
+<div class="reply">
+  <h2>Your next message — written for you</h2>
+  <textarea id="out" readonly>Nothing decided yet — answer the questions above.</textarea>
+  <input id="extra" placeholder="Anything the questions missed? (free note — goes into the reply)">
+  <div>
+    <button class="copy" id="copyBtn">Copy reply</button>
+    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var ORDER = ['access model', 'expiry and revocation', 'shared data scope',
+               'recipient capabilities', 'visibility for the sender'];
+  var CELL = { 'access model': 'd-q1', 'expiry and revocation': 'd-q2',
+               'shared data scope': 'd-q3', 'recipient capabilities': 'd-q4',
+               'visibility for the sender': 'd-q5' };
+  var picks = {};
+
+  function rebuild() {
+    ORDER.forEach(function (g) {
+      var cell = document.getElementById(CELL[g]);
+      if (picks[g]) { cell.textContent = picks[g]; cell.classList.add('set'); }
+      else { cell.textContent = '—'; cell.classList.remove('set'); }
+    });
+
+    var decided = ORDER.filter(function (g) { return picks[g]; });
+    if (!decided.length) {
+      document.getElementById('out').value = 'Nothing decided yet — answer the questions above.';
+      return;
+    }
+    var lines = ['Build share-via-link for QA reports with these decisions:'];
+    decided.forEach(function (g) { lines.push('- ' + g + ': ' + picks[g]); });
+    var open = ORDER.filter(function (g) { return !picks[g]; });
+    if (open.length)
+      lines.push('Still open (treat as your call, and say what you chose): ' + open.join('; ') + '.');
+    var extra = document.getElementById('extra').value.trim();
+    if (extra) lines.push('Also: ' + extra);
+    document.getElementById('out').value = lines.join('\n');
+  }
+
+  document.querySelectorAll('.opt[data-group]').forEach(function (o) {
+    o.addEventListener('click', function () {
+      document.querySelectorAll('.opt[data-group="' + o.dataset.group + '"]')
+        .forEach(function (s) { s.classList.remove('sel'); });
+      o.classList.add('sel');
+      picks[o.dataset.group] = o.dataset.value;
+      rebuild();
+    });
+  });
+
+  document.getElementById('extra').addEventListener('input', rebuild);
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var out = document.getElementById('out');
+    function done() {
+      var el = document.getElementById('copied');
+      el.classList.add('on');
+      setTimeout(function () { el.classList.remove('on'); }, 2200);
+    }
+    function legacy() {
+      out.removeAttribute('readonly'); out.select();
+      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
+      out.setAttribute('readonly', ''); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(out.value).then(done, legacy);
+    else legacy();
+  });
+})();
+</script>
+</body>
+</html>

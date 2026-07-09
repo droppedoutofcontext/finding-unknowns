@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Order worker — merge readiness</title>
+<style>
+  :root{
+    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
+    --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
+  h1{font-size:18px;margin:0 0 6px}
+  h2{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--mut);margin:32px 0 10px}
+  .lede{color:var(--mut);margin:0 0 8px;max-width:70ch}
+  .sub{color:var(--mut);font-size:12.5px}
+  .hint{margin:0 0 6px;max-width:70ch}
+  details.how{margin:0 0 24px;font-size:12.5px;color:var(--mut);max-width:70ch}
+  details.how summary{cursor:pointer;width:max-content}
+  details.how p{margin:8px 0 0}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:0 0 14px}
+  .card h3{margin:0 0 6px;font-size:14.5px}
+  .card p{margin:0 0 8px;max-width:78ch}
+  .card p:last-child{margin-bottom:0}
+  .card code{font:12px/1.5 ui-monospace,Menlo,monospace;background:#f1f1ee;padding:1px 5px;border-radius:4px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
+       padding:12px 14px;font:inherit;text-align:left;width:100%}
+  .opt.sel{border-color:var(--ink);background:#f1f1ee}
+  .opt.right{border-color:var(--steal);background:var(--steal-bg)}
+  .opt.wrong{border-color:var(--skip);background:var(--skip-bg)}
+  .q{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;margin:0 0 14px}
+  .q>p{margin:0 0 10px;font-weight:600}
+  .q .why{display:none;color:var(--mut);font-size:12.5px;margin:10px 0 0;max-width:78ch}
+  .q.answered .why{display:block}
+  .q .why a{color:inherit}
+  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+  .reply h2{margin-top:0}
+  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;
+        padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+        margin-top:10px;font:inherit}
+  .copy{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:10px 20px;
+        font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
+  .copied{color:var(--steal);font-weight:600;font-size:12.5px;opacity:0;transition:opacity .2s;margin-left:10px}
+  .copied.on{opacity:1}
+</style>
+</head>
+<body>
+<h1>Order-processing worker — are you ready to merge?</h1>
+<p class="lede">You said you only skimmed this diff. Below is what it actually changes, grouped by
+risk — and then six questions. The decision being extracted is honest: merge now, or re-read two
+sections first.</p>
+<p class="sub hint">Read the report, then answer the quiz. A wrong answer shows you exactly which
+section you skimmed. Your reply — pass, or the list of sections to re-read — assembles itself at
+the bottom. Copy it and paste it back into the chat.</p>
+<details class="how">
+  <summary>What is this?</summary>
+  <p>A live example from the finding-unknowns skill. Before a risky merge, the cheapest unknown to
+  surface is what <em>you</em> don't know about your own change. The report is grouped by risk
+  rather than by file, and the quiz checks whether the risky parts actually made it into your
+  head.</p>
+</details>
+
+<h2 id="sec-rename">High risk · in-flight workers vs the column rename</h2>
+<div class="card">
+  <h3>Migration 007 renames <code>orders.status</code> to <code>state</code> under running workers</h3>
+  <p>Deployed workers poll <code>SELECT id FROM orders WHERE status = 'pending'</code> every five
+  seconds. The moment the rename applies, that query starts failing with "column does not exist" —
+  on every instance, until the new code is deployed. Order processing stalls; nothing crashes
+  loudly.</p>
+  <p>Neither deploy order fixes this alone: old code breaks after the migration, new code breaks
+  before it. The safe path is a compatibility step — deploy code that tolerates both column names
+  (or a temporary view), migrate, then clean up.</p>
+</div>
+
+<h2 id="sec-retry">High risk · retry semantics changed twice in one diff</h2>
+<div class="card">
+  <h3>4xx responses are now final; everything else retries more</h3>
+  <p>The old code retried every provider error up to 3 attempts. The new code throws immediately on
+  any 4xx — a declined card fails on the first try, permanently — while 5xx and network errors now
+  retry up to 5 attempts with exponential backoff. Both changes are deliberate, but they ship
+  together silently: dashboards tuned to "3 attempts for everything" will misread both failure
+  modes.</p>
+</div>
+
+<h2 id="sec-charging">Medium risk · the new "charging" state</h2>
+<div class="card">
+  <h3>An idempotency claim, with no reaper</h3>
+  <p>Workers now set <code>state = 'charging'</code> before calling the payment provider, so a
+  parallel instance skips the row instead of double-charging. But if a worker dies mid-call, the
+  row stays in <code>charging</code> forever — this diff adds no timeout or reaper. Rare, manual to
+  fix, worth a follow-up ticket before it happens at 3am.</p>
+</div>
+
+<h2 id="sec-housekeeping">Low risk · housekeeping</h2>
+<div class="card">
+  <p>The index moves with the rename (<code>idx_orders_status</code> →
+  <code>idx_orders_state</code>), so polling stays indexed. The state comment gains the new
+  <code>charging</code> value. Nothing else touches the schema.</p>
+</div>
+
+<h2>The quiz — six questions, then your verdict</h2>
+
+<div class="q" data-answer="polling fails until new code deploys" data-review="in-flight workers vs the column rename">
+  <p>1 · Migration 007 applies while the current workers are still running. What happens to them?</p>
+  <div class="grid">
+    <button class="opt" data-group="q1" data-value="they keep processing normally">They keep processing normally</button>
+    <button class="opt" data-group="q1" data-value="polling fails until new code deploys">Their polling query fails until the new code deploys</button>
+    <button class="opt" data-group="q1" data-value="they process each order twice">They process each order twice</button>
+    <button class="opt" data-group="q1" data-value="the migration waits for them">The migration waits for them to finish</button>
+  </div>
+  <div class="why">The workers still query <code>status</code>, which no longer exists — every poll
+  errors and processing stalls quietly. See <a href="#sec-rename">the column rename section</a>.</div>
+</div>
+
+<div class="q" data-answer="fails immediately with no retry" data-review="retry semantics changed twice in one diff">
+  <p>2 · The payment provider returns HTTP 402 for an order. What does the new code do?</p>
+  <div class="grid">
+    <button class="opt" data-group="q2" data-value="retries up to 5 times">Retries up to 5 times with backoff</button>
+    <button class="opt" data-group="q2" data-value="retries up to 3 times">Retries up to 3 times, like before</button>
+    <button class="opt" data-group="q2" data-value="fails immediately with no retry">Fails immediately — no retry</button>
+    <button class="opt" data-group="q2" data-value="marks the order pending again">Marks the order pending again</button>
+  </div>
+  <div class="why">4xx is now treated as final. Only 5xx and network errors retry. See
+  <a href="#sec-retry">the retry section</a>.</div>
+</div>
+
+<div class="q" data-answer="retries up to 5 attempts with backoff" data-review="retry semantics changed twice in one diff">
+  <p>3 · Same order, but the provider returns HTTP 503. What does the new code do?</p>
+  <div class="grid">
+    <button class="opt" data-group="q3" data-value="fails immediately">Fails immediately</button>
+    <button class="opt" data-group="q3" data-value="retries up to 3 attempts">Retries up to 3 attempts</button>
+    <button class="opt" data-group="q3" data-value="retries up to 5 attempts with backoff">Retries up to 5 attempts with backoff</button>
+    <button class="opt" data-group="q3" data-value="retries forever">Retries until it succeeds</button>
+  </div>
+  <div class="why">Server errors got <em>more</em> patient in the same diff that made client errors
+  final: <code>MAX_ATTEMPTS</code> went from 3 to 5. See <a href="#sec-retry">the retry section</a>.</div>
+</div>
+
+<div class="q" data-answer="an idempotency claim so parallel workers skip the row" data-review="the new charging state">
+  <p>4 · What is the new <code>charging</code> state actually for?</p>
+  <div class="grid">
+    <button class="opt" data-group="q4" data-value="showing progress in the admin UI">Showing progress in the admin UI</button>
+    <button class="opt" data-group="q4" data-value="an idempotency claim so parallel workers skip the row">An idempotency claim so parallel workers skip the row</button>
+    <button class="opt" data-group="q4" data-value="a retry counter">Tracking the retry counter</button>
+    <button class="opt" data-group="q4" data-value="analytics on charge duration">Analytics on charge duration</button>
+  </div>
+  <div class="why">A worker claims the row before calling the provider so another instance can't
+  double-charge it. See <a href="#sec-charging">the charging-state section</a>.</div>
+</div>
+
+<div class="q" data-answer="stuck in charging until someone fixes it by hand" data-review="the new charging state">
+  <p>5 · A worker sets <code>charging</code>, calls the provider, and dies before the response.
+  Where does that order end up?</p>
+  <div class="grid">
+    <button class="opt" data-group="q5" data-value="automatically reset to pending">Automatically reset to pending</button>
+    <button class="opt" data-group="q5" data-value="marked failed">Marked failed</button>
+    <button class="opt" data-group="q5" data-value="stuck in charging until someone fixes it by hand">Stuck in charging until someone fixes it by hand</button>
+    <button class="opt" data-group="q5" data-value="picked up by the next worker">Picked up by the next worker</button>
+  </div>
+  <div class="why">The diff adds the claim but no reaper — nothing ever moves a row out of
+  <code>charging</code> except a successful response. See
+  <a href="#sec-charging">the charging-state section</a>.</div>
+</div>
+
+<div class="q" data-answer="neither order alone — a compatibility step is needed" data-review="in-flight workers vs the column rename">
+  <p>6 · What's the safe rollout order for this change?</p>
+  <div class="grid">
+    <button class="opt" data-group="q6" data-value="migrate first, then deploy">Migrate first, then deploy the new code</button>
+    <button class="opt" data-group="q6" data-value="deploy first, then migrate">Deploy the new code first, then migrate</button>
+    <button class="opt" data-group="q6" data-value="either order works">Either order works</button>
+    <button class="opt" data-group="q6" data-value="neither order alone — a compatibility step is needed">Neither alone — a compatibility step is needed</button>
+  </div>
+  <div class="why">Old code reads <code>status</code>, new code reads <code>state</code> — each
+  breaks on the other's schema. You need a step that tolerates both. See
+  <a href="#sec-rename">the column rename section</a>.</div>
+</div>
+
+<div class="reply">
+  <h2>Your verdict — written for you</h2>
+  <textarea id="out" readonly>No answers yet — take the quiz above.</textarea>
+  <input id="extra" placeholder="Anything the report missed? (free note — goes into the reply)">
+  <div>
+    <button class="copy" id="copyBtn">Copy reply</button>
+    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  function rebuild() {
+    var qs = document.querySelectorAll('.q[data-answer]');
+    var answered = 0, right = 0, review = [];
+    qs.forEach(function (q) {
+      var sel = q.querySelector('.opt.sel');
+      if (!sel) return;
+      answered++;
+      if (sel.dataset.value === q.dataset.answer) right++;
+      else if (review.indexOf(q.dataset.review) === -1) review.push(q.dataset.review);
+    });
+
+    var lines = [];
+    if (answered) {
+      if (right === qs.length) {
+        lines.push('Merge-readiness quiz passed ' + right + '/' + qs.length + ' — merging.');
+      } else {
+        lines.push('Merge-readiness quiz: ' + right + '/' + qs.length + ' correct' +
+          (answered < qs.length ? ' (' + (qs.length - answered) + ' unanswered)' : '') + '.');
+        if (review.length)
+          lines.push('Before merging I will re-read:\n- ' + review.join('\n- '));
+        lines.push('Hold the merge until I confirm.');
+      }
+    }
+    var extra = document.getElementById('extra').value.trim();
+    if (extra) lines.push('Also: ' + extra);
+    document.getElementById('out').value =
+      lines.join('\n\n') || 'No answers yet — take the quiz above.';
+  }
+
+  document.querySelectorAll('.opt[data-group]').forEach(function (o) {
+    o.addEventListener('click', function () {
+      document.querySelectorAll('.opt[data-group="' + o.dataset.group + '"]')
+        .forEach(function (s) { s.classList.remove('sel', 'right', 'wrong'); });
+      o.classList.add('sel');
+      var q = o.closest('.q');
+      if (q && q.dataset.answer) {
+        q.classList.add('answered');
+        o.classList.add(o.dataset.value === q.dataset.answer ? 'right' : 'wrong');
+      }
+      rebuild();
+    });
+  });
+
+  document.getElementById('extra').addEventListener('input', rebuild);
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var out = document.getElementById('out');
+    function done() {
+      var el = document.getElementById('copied');
+      el.classList.add('on');
+      setTimeout(function () { el.classList.remove('on'); }, 2200);
+    }
+    function legacy() {
+      out.removeAttribute('readonly'); out.select();
+      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
+      out.setAttribute('readonly', ''); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(out.value).then(done, legacy);
+    else legacy();
+  });
+})();
+</script>
+</body>
+</html>

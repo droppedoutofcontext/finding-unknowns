@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support dashboard — four directions</title>
+<style>
+  :root{
+    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
+    --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
+  h1{font-size:18px;margin:0 0 6px}
+  h2{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--mut);margin:32px 0 10px}
+  .lede{color:var(--mut);margin:0 0 8px;max-width:70ch}
+  .sub{color:var(--mut);font-size:12.5px}
+  .hint{margin:0 0 6px;max-width:70ch}
+  details.how{margin:0 0 24px;font-size:12.5px;color:var(--mut);max-width:70ch}
+  details.how summary{cursor:pointer;width:max-content}
+  details.how p{margin:8px 0 0}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+  .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
+       padding:12px 14px;font:inherit;text-align:left;width:100%}
+  .opt.sel{border-color:var(--ink);background:#f1f1ee}
+  .opt .why-opt{display:block;color:var(--mut);font-size:12.5px;margin-top:4px}
+  .preview{border:1px dashed var(--line);border-radius:8px;background:#fff;overflow:hidden;margin:0 0 10px}
+  .chip{display:inline-flex;align-items:center;gap:6px;margin:0 6px 8px 0;padding:6px 11px;
+        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer}
+  .chip .ic{font-size:11px;width:13px;text-align:center;color:var(--mut)}
+  .chip.steal{border-color:var(--steal);background:var(--steal-bg);color:var(--steal)}
+  .chip.skip{border-color:var(--skip);background:var(--skip-bg);color:var(--skip);text-decoration:line-through}
+  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+  .reply h2{margin-top:0}
+  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;
+        padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 14px;
+        margin-top:10px;font:inherit}
+  .copy{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:10px 20px;
+        font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
+  .copied{color:var(--steal);font-weight:600;font-size:12.5px;opacity:0;transition:opacity .2s;margin-left:10px}
+  .copied.on{opacity:1}
+
+  /* ---- preview content: four candidate looks for the same dashboard ---- */
+  .pv{padding:14px;min-height:190px}
+  .pv table{border-collapse:collapse;width:100%}
+
+  /* A — ops console */
+  .pva{background:#101318;color:#d5dae3;font:11px/1.45 ui-monospace,Menlo,monospace}
+  .pva .bar{display:flex;justify-content:space-between;border-bottom:1px solid #232833;padding:0 0 8px}
+  .pva .bar b{color:#fff;font-weight:600}
+  .pva .dots span{margin-left:10px}
+  .pva .ok::before{content:"● ";color:#3fb96a}
+  .pva .warn::before{content:"● ";color:#d9a13b}
+  .pva .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+  .pva .kpi{background:#161b23;padding:7px 9px;border:1px solid #232833}
+  .pva .kpi i{display:block;font-style:normal;color:#8b93a3;font-size:9.5px}
+  .pva .kpi b{font-size:15px;color:#fff}
+  .pva td{border-top:1px solid #232833;padding:4px 6px;color:#aeb6c4}
+  .pva td:last-child{text-align:right}
+
+  /* B — editorial */
+  .pvb{background:#fbf8f1;color:#20211d;font-family:Georgia,'Times New Roman',serif;padding:20px 22px}
+  .pvb h3{margin:0;font-size:17px;font-weight:400}
+  .pvb .rule{border:0;border-top:1px solid #20211d;margin:8px 0 14px}
+  .pvb .row{display:flex;gap:26px}
+  .pvb .num b{display:block;font-size:30px;font-weight:400;line-height:1.1}
+  .pvb .num span{font:11px/1.4 ui-sans-serif,system-ui,sans-serif;color:#77746a;
+                 letter-spacing:.06em;text-transform:uppercase}
+  .pvb p{margin:14px 0 0;font-size:12.5px;font-style:italic;color:#57544b;max-width:46ch}
+
+  /* C — card board */
+  .pvc{background:#eef1f6}
+  .pvc .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .pvc h4{margin:0 0 8px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:#5d6472}
+  .pvc .tkt{background:#fff;border-radius:9px;padding:8px 10px;margin-bottom:8px;
+            box-shadow:0 1px 2px rgba(16,19,24,.08);font-size:11px}
+  .pvc .tkt em{display:block;font-style:normal;color:#8a909c;font-size:10px;margin-top:3px}
+  .pvc .tag{display:inline-block;border-radius:5px;padding:1px 6px;font-size:9.5px;color:#fff;margin-top:5px}
+  .pvc .t1{background:#4b6fe8}.pvc .t2{background:#d9863b}.pvc .t3{background:#3fa06a}
+
+  /* D — terminal */
+  .pvd{background:#0a0e0a;color:#8ee08e;font:11px/1.6 ui-monospace,Menlo,monospace}
+  .pvd .dim{color:#4e7a4e}
+  .pvd .hi{color:#d2f8d2}
+  .pvd pre{margin:0;white-space:pre;overflow-x:auto}
+</style>
+</head>
+<body>
+<h1>Support dashboard — four directions</h1>
+<p class="lede">You asked for the team dashboard to "look more professional". These are four honest,
+different answers to that — the decision being extracted is which one is yours.</p>
+<p class="sub hint">Pick the direction that's closest overall, then use the chips under each one:
+click once to take that element (even from a direction you rejected), twice to say "definitely not",
+a third time to clear. Your reply assembles itself at the bottom — copy it and paste it back into
+the chat.</p>
+<details class="how">
+  <summary>What is this?</summary>
+  <p>A live example from the finding-unknowns skill. People are bad at describing visual taste and
+  very good at recognizing it, so instead of asking "what style do you want?" the skill renders the
+  same screen four genuinely different ways and lets you point. The chips let you compose a fifth
+  direction out of pieces; the textarea at the bottom writes your next chat message for you.</p>
+</details>
+
+<h2>Which direction is closest overall?</h2>
+<div class="grid">
+  <button class="opt" data-group="overall direction" data-value="A — ops console">A — ops console
+    <span class="why-opt">for teams who live in the dashboard all day</span></button>
+  <button class="opt" data-group="overall direction" data-value="B — editorial">B — editorial
+    <span class="why-opt">for a weekly report execs actually read</span></button>
+  <button class="opt" data-group="overall direction" data-value="C — card board">C — card board
+    <span class="why-opt">for triage — work as movable objects</span></button>
+  <button class="opt" data-group="overall direction" data-value="D — terminal">D — terminal
+    <span class="why-opt">for engineers who distrust anything prettier</span></button>
+</div>
+
+<h2>A — ops console</h2>
+<div class="preview"><div class="pv pva">
+  <div class="bar"><b>support/ops — live</b>
+    <span class="dots"><span class="ok">api</span><span class="ok">queue</span><span class="warn">email</span></span></div>
+  <div class="kpis">
+    <div class="kpi"><i>open</i><b>147</b></div>
+    <div class="kpi"><i>breaching SLA</i><b>6</b></div>
+    <div class="kpi"><i>median first reply</i><b>18m</b></div>
+    <div class="kpi"><i>CSAT 7d</i><b>4.6</b></div>
+  </div>
+  <table>
+    <tr><td>#4821 checkout fails on 3DS</td><td>P1 · 22m left</td></tr>
+    <tr><td>#4818 webhook retries exhausted</td><td>P1 · 41m left</td></tr>
+    <tr><td>#4809 export missing rows</td><td>P2 · 3h left</td></tr>
+  </table>
+</div></div>
+<div>
+  <span class="chip" data-trait="dark, high-contrast palette" data-group="A"><span class="ic">·</span>dark palette</span>
+  <span class="chip" data-trait="dense KPI strip above the fold" data-group="A"><span class="ic">·</span>dense KPI strip</span>
+  <span class="chip" data-trait="live status dots in the header" data-group="A"><span class="ic">·</span>status dots</span>
+  <span class="chip" data-trait="monospace numerals and tables" data-group="A"><span class="ic">·</span>mono numerals</span>
+  <span class="chip" data-trait="SLA countdowns on every row" data-group="A"><span class="ic">·</span>SLA countdowns</span>
+</div>
+
+<h2>B — editorial</h2>
+<div class="preview"><div class="pv pvb">
+  <h3>Support, week 27</h3>
+  <hr class="rule">
+  <div class="row">
+    <div class="num"><b>147</b><span>open</span></div>
+    <div class="num"><b>18 min</b><span>first reply</span></div>
+    <div class="num"><b>4.6</b><span>csat</span></div>
+    <div class="num"><b>−12%</b><span>backlog</span></div>
+  </div>
+  <p>Backlog fell for the third week running; the two SLA breaches both trace to the email
+  integration outage on Tuesday.</p>
+</div></div>
+<div>
+  <span class="chip" data-trait="serif headings on a warm paper background" data-group="B"><span class="ic">·</span>serif on paper</span>
+  <span class="chip" data-trait="a few large numbers instead of many small ones" data-group="B"><span class="ic">·</span>large sparse numbers</span>
+  <span class="chip" data-trait="one written sentence of analysis under the numbers" data-group="B"><span class="ic">·</span>narrative caption</span>
+  <span class="chip" data-trait="generous whitespace, no boxes or borders" data-group="B"><span class="ic">·</span>whitespace over boxes</span>
+</div>
+
+<h2>C — card board</h2>
+<div class="preview"><div class="pv pvc">
+  <div class="cols">
+    <div><h4>New · 23</h4>
+      <div class="tkt">Checkout fails on 3DS<em>acme.io — 12m ago</em><span class="tag t1">billing</span></div>
+      <div class="tkt">SSO loop on Safari<em>northwind — 44m ago</em><span class="tag t2">auth</span></div>
+    </div>
+    <div><h4>Waiting · 11</h4>
+      <div class="tkt">Export missing rows<em>globex — 2h ago</em><span class="tag t3">data</span></div>
+    </div>
+    <div><h4>Breaching · 6</h4>
+      <div class="tkt">Webhook retries exhausted<em>initech — 3h ago</em><span class="tag t1">billing</span></div>
+    </div>
+  </div>
+</div></div>
+<div>
+  <span class="chip" data-trait="tickets as cards in status columns" data-group="C"><span class="ic">·</span>cards in columns</span>
+  <span class="chip" data-trait="colored category tags on each card" data-group="C"><span class="ic">·</span>colored tags</span>
+  <span class="chip" data-trait="soft shadows and rounded corners" data-group="C"><span class="ic">·</span>soft shadows</span>
+  <span class="chip" data-trait="counts in the column headers" data-group="C"><span class="ic">·</span>column counts</span>
+</div>
+
+<h2>D — terminal</h2>
+<div class="preview"><div class="pv pvd">
+<pre>
+<span class="dim">$</span> support --today
+<span class="hi">open 147   breaching 6   first-reply p50 18m   csat 4.6</span>
+
+<span class="dim">PRI  TICKET                              AGE   SLA</span>
+P1   #4821 checkout fails on 3DS         12m   <span class="hi">22m</span>
+P1   #4818 webhook retries exhausted     3h    <span class="hi">41m</span>
+P2   #4809 export missing rows           2h    3h
+<span class="dim">6 more · support --all</span>
+</pre>
+</div></div>
+<div>
+  <span class="chip" data-trait="everything is one monospace text block" data-group="D"><span class="ic">·</span>pure text</span>
+  <span class="chip" data-trait="single accent color for what matters now" data-group="D"><span class="ic">·</span>one accent color</span>
+  <span class="chip" data-trait="truncate aggressively, offer a 'more' escape" data-group="D"><span class="ic">·</span>aggressive truncation</span>
+</div>
+
+<div class="reply">
+  <h2>Your next message — written for you</h2>
+  <textarea id="out" readonly>Nothing selected yet — click through the options above.</textarea>
+  <input id="extra" placeholder="Anything else you noticed? (free note — goes into the reply)">
+  <div>
+    <button class="copy" id="copyBtn">Copy reply</button>
+    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var traits = {};
+  var picks = {};
+
+  function rebuild() {
+    var lines = [];
+    if (picks['overall direction'])
+      lines.push('Overall direction: ' + picks['overall direction'] + '.');
+    var steals = [], skips = [];
+    Object.keys(traits).forEach(function (t) {
+      var s = traits[t];
+      var label = s.group ? t + ' (from ' + s.group + ')' : t;
+      (s.mode === 'steal' ? steals : skips).push(label);
+    });
+    if (steals.length) lines.push('Take:\n- ' + steals.join('\n- '));
+    if (skips.length) lines.push('Definitely not:\n- ' + skips.join('\n- '));
+    var extra = document.getElementById('extra').value.trim();
+    if (extra) lines.push('Also: ' + extra);
+    document.getElementById('out').value =
+      lines.join('\n\n') || 'Nothing selected yet — click through the options above.';
+  }
+
+  document.querySelectorAll('.chip').forEach(function (c) {
+    c.addEventListener('click', function () {
+      var t = c.dataset.trait;
+      var cur = traits[t] && traits[t].mode;
+      var next = !cur ? 'steal' : (cur === 'steal' ? 'skip' : null);
+      c.classList.remove('steal', 'skip');
+      if (next) { traits[t] = { group: c.dataset.group || '', mode: next }; c.classList.add(next); }
+      else delete traits[t];
+      c.querySelector('.ic').textContent = next === 'steal' ? '✓' : (next === 'skip' ? '✕' : '·');
+      rebuild();
+    });
+  });
+
+  document.querySelectorAll('.opt[data-group]').forEach(function (o) {
+    o.addEventListener('click', function () {
+      document.querySelectorAll('.opt[data-group="' + o.dataset.group + '"]')
+        .forEach(function (s) { s.classList.remove('sel'); });
+      o.classList.add('sel');
+      picks[o.dataset.group] = o.dataset.value || o.textContent.trim();
+      rebuild();
+    });
+  });
+
+  document.getElementById('extra').addEventListener('input', rebuild);
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var out = document.getElementById('out');
+    function done() {
+      var el = document.getElementById('copied');
+      el.classList.add('on');
+      setTimeout(function () { el.classList.remove('on'); }, 2200);
+    }
+    function legacy() {
+      out.removeAttribute('readonly'); out.select();
+      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
+      out.setAttribute('readonly', ''); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(out.value).then(done, legacy);
+    else legacy();
+  });
+})();
+</script>
+</body>
+</html>
