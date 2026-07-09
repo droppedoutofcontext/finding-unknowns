@@ -1,7 +1,7 @@
 {
   "name": "finding-unknowns",
   "description": "Surface hidden requirements with small interactive HTML artifacts — blindspot passes, interviews, design-direction pickers, tweakable plans, merge quizzes. Packaging of Thariq Shihipar's \"A Field Guide to Fable: Finding Your Unknowns\" workflow as a Claude Code skill.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": {
     "name": "droppedoutofcontext"
   },

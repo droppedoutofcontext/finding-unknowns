@@ -1,0 +1,38 @@
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify skeleton and example artifacts
+        run: |
+          set -e
+          for f in skills/finding-unknowns/assets/reply-skeleton.html docs/examples/*.html; do
+            echo "== $f"
+            node skills/finding-unknowns/scripts/verify_artifact.mjs "$f"
+          done
+
+      - name: Check eval fixture paths exist
+        run: |
+          node -e '
+            const fs = require("fs"), path = require("path");
+            const dir = "skills/finding-unknowns/evals";
+            const evals = JSON.parse(fs.readFileSync(path.join(dir, "evals.json"), "utf8")).evals;
+            const missing = evals.flatMap(e => e.files || [])
+              .filter(f => !fs.existsSync(path.join(dir, f)));
+            if (missing.length) {
+              console.error("Missing eval fixtures: " + missing.join(", "));
+              process.exit(1);
+            }
+            console.log("All eval fixture paths exist.");
+          '
