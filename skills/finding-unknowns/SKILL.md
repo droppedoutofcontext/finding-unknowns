@@ -114,8 +114,9 @@ actually read.
    `select()` + `execCommand('copy')`, and leave the textarea selectable for
    a manual copy — sandboxed viewers block the clipboard API silently. Start
    from [assets/reply-skeleton.html](assets/reply-skeleton.html): it has this
-   plumbing (selection state, chip cycling, reply rebuild, resilient copy)
-   ready to adapt.
+   plumbing ready to adapt — tri-state trait chips, pick-one option groups,
+   self-grading quiz questions, reply rebuild, resilient copy. Delete the
+   mechanics your technique doesn't use rather than inventing new ones.
 
 3. **Order by decision impact, not execution order.** Biggest architectural
    blast radius first; the choices most likely to be tweaked at the top;
@@ -150,17 +151,42 @@ actually read.
    ([source](scripts/verify_artifact.mjs)) — or equivalent checks if node is
    unavailable: inline JS parses, every id referenced from JS exists in the
    markup, no external URLs, script sits at the end of body. A broken copy
-   button kills the whole loop silently.
+   button kills the whole loop silently. If a browser tool is available,
+   also open the artifact and click one control — confirm the assembled
+   reply actually changes. The static checks can't catch a listener that
+   never fires.
+
+## The decisions ledger
+
+A decision the user makes through an artifact outlives the turn — persist
+it. Keep `.unknowns/decisions.md` in the project: one dated line per
+accepted decision ("2026-07-10 — share links: expiring token, 7 days,
+revocable"). When this skill triggers, read the ledger first and don't
+re-ask anything already settled there; a new round appends its accepted
+decisions at the end. The generated HTML is throwaway — git-ignore
+`.unknowns/*.html` — but the ledger is the project's growing spec, worth
+committing. Implementation notes (technique 9) live next to it as
+`.unknowns/notes-<topic>.md`.
 
 ## Workflow
 
 1. Detect that the blocking problem is an unknown, not missing effort.
+   Check `.unknowns/decisions.md` — what's already settled shapes what's
+   still unknown.
 2. Pick from the table the cheapest technique that answers the blocking
    question; read its blueprint. One artifact per round — blending techniques
    inside a single artifact is fine when they serve the same decision.
 3. Build the artifact and hand it to the user; say in one sentence what
    decision it's meant to extract.
-4. The user interacts and pastes back the assembled reply.
+4. The user interacts and pastes back the assembled reply. Receive it with
+   care — this step is where the loop's value lands or leaks:
+   - Anything left unanswered is a "you decide"; say which defaults you're
+     choosing, in one line, so silence never turns into a silent guess.
+   - If two selections contradict each other, or the free note contradicts
+     a selection, ask about that one conflict in chat — don't rebuild the
+     artifact.
+   - Play back the accepted decisions in one short paragraph before
+     building, and append them to the ledger.
 5. Fold the answers into the implementation prompt (or the plan, or the PR)
    and proceed. One exception before coding: if the accepted decisions were
    composed from pieces of different options ("B, but A's header and D's

@@ -8,12 +8,12 @@
   /* Design contract — quiet chrome, faithful content. Keep this system
      as-is: one font stack, three text sizes (18/14.5/12.5), monochrome
      chrome — color appears ONLY as the user's own decision state (steal /
-     skip / selected), never as decoration — whitespace over boxes, no
-     gradients or shadows. Extra styles live only INSIDE .preview regions,
-     and they are not free creativity — a .preview depicts the thing being
-     decided: the project's real look (placement mocks, before/afters) or a
-     candidate look proposed for it (design directions). Never a generic
-     demo UI. */
+     skip / selected / right / wrong), never as decoration — whitespace over
+     boxes, no gradients or shadows. Extra styles live only INSIDE .preview
+     regions, and they are not free creativity — a .preview depicts the
+     thing being decided: the project's real look (placement mocks,
+     before/afters) or a candidate look proposed for it (design
+     directions). Never a generic demo UI. */
   :root{
     --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
     --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
@@ -35,10 +35,19 @@
   .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
   .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
 
-  /* --- selectable option card (interview answers, placements, verdicts) --- */
+  /* --- selectable option card (interview answers, placements, verdicts).
+         Pick-one within a data-group; wired by the script below. --- */
   .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
        padding:12px 14px;font:inherit;text-align:left;width:100%}
   .opt.sel{border-color:var(--ink);background:#f1f1ee}
+  .opt .why-opt{display:block;color:var(--mut);font-size:12.5px;margin-top:4px}
+
+  /* --- quiz question: a .q with data-answer; selected .opt turns
+         right/wrong, the .why explanation reveals itself. --- */
+  .opt.right{border-color:var(--steal);background:var(--steal-bg)}
+  .opt.wrong{border-color:var(--skip);background:var(--skip-bg)}
+  .q .why{display:none;color:var(--mut);font-size:12.5px;margin:8px 0 0}
+  .q.answered .why{display:block}
 
   /* --- framed region for demo content; style freely INSIDE it only --- */
   .preview{border:1px dashed var(--line);border-radius:8px;background:#fff;overflow:hidden}
@@ -78,15 +87,41 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
 
 <!-- ============================================================
      YOUR CONTENT HERE. Build sections as h2 + .card/.grid; put any
-     rendered demo inside a .preview. Give every selectable trait a
-     .chip with a data-trait (text that goes into the reply) and
-     optionally a data-group (where it came from, e.g. a direction's
-     name); use .opt for pick-one option cards.
-     Order sections by decision impact: big calls first.
+     rendered demo inside a .preview. Order sections by decision
+     impact: big calls first. Three ready-made mechanics — delete
+     the ones your technique doesn't use:
+
+     1. Tri-state trait chips (design directions, blindspot fixes):
+        .chip with data-trait (text that goes into the reply) and
+        optionally data-group (where it came from).
+
+     2. Pick-one option cards (interview questions, placements):
+        .opt with data-group (the question, shared by its siblings)
+        and data-value (the answer text for the reply). Selecting
+        one deselects the rest of its group.
+
+     3. Quiz questions (merge quiz): wrap pick-one .opt cards in a
+        .q with data-answer (the correct data-value) and
+        data-review (where to re-read on a wrong answer); add a
+        .why div with the explanation. Score lands in the reply.
      ============================================================ -->
 <div>
   <span class="chip" data-trait="example trait one"><span class="ic">·</span>trait one</span>
   <span class="chip" data-trait="example trait two" data-group="direction B"><span class="ic">·</span>trait two</span>
+</div>
+
+<div class="grid">
+  <button class="opt" data-group="example question" data-value="answer A">Answer A
+    <span class="why-opt">one-line consequence of choosing A</span></button>
+  <button class="opt" data-group="example question" data-value="answer B">Answer B
+    <span class="why-opt">one-line consequence of choosing B</span></button>
+</div>
+
+<div class="q card" data-answer="right answer" data-review="the section to re-read">
+  <p>Example quiz question?</p>
+  <button class="opt" data-group="example quiz q" data-value="right answer">Right answer</button>
+  <button class="opt" data-group="example quiz q" data-value="wrong answer">Wrong answer</button>
+  <div class="why">Why the right answer is right, one or two sentences.</div>
 </div>
 
 <!-- --- assembled reply: keep the ids (out, extra, copyBtn, copied) verbatim --- -->
@@ -103,20 +138,45 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
 <script>
 (function () {
   'use strict';
-  // trait text -> {group, mode: 'steal' | 'skip'}
-  var state = {};
+  var traits = {}; // trait text -> {group, mode: 'steal' | 'skip'}
+  var picks = {};  // question (data-group) -> chosen data-value
 
   function rebuild() {
-    // ADAPT THIS: compose the reply from `state` in the user's language.
+    // ADAPT THIS: compose the reply from traits/picks/quiz in the user's
+    // language. Drop the blocks your technique doesn't use.
+    var lines = [];
+
+    var decisions = Object.keys(picks)
+      .filter(function (g) { return !document.querySelector('.q [data-group="' + g + '"]'); })
+      .map(function (g) { return '- ' + g + ': ' + picks[g]; });
+    if (decisions.length) lines.push('Decisions:\n' + decisions.join('\n'));
+
     var steals = [], skips = [];
-    Object.keys(state).forEach(function (t) {
-      var s = state[t];
+    Object.keys(traits).forEach(function (t) {
+      var s = traits[t];
       var label = s.group ? t + ' (' + s.group + ')' : t;
       (s.mode === 'steal' ? steals : skips).push(label);
     });
-    var lines = [];
     if (steals.length) lines.push('Take:\n- ' + steals.join('\n- '));
     if (skips.length) lines.push('Definitely not:\n- ' + skips.join('\n- '));
+
+    var qs = document.querySelectorAll('.q[data-answer]');
+    if (qs.length) {
+      var answered = 0, right = 0, review = [];
+      qs.forEach(function (q) {
+        var sel = q.querySelector('.opt.sel');
+        if (!sel) return;
+        answered++;
+        if (sel.dataset.value === q.dataset.answer) right++;
+        else if (q.dataset.review) review.push(q.dataset.review);
+      });
+      if (answered) {
+        lines.push('Quiz: ' + right + '/' + qs.length + ' correct' +
+          (answered < qs.length ? ' (' + (qs.length - answered) + ' unanswered)' : ''));
+        if (review.length) lines.push('Re-read before merging:\n- ' + review.join('\n- '));
+      }
+    }
+
     var extra = document.getElementById('extra').value.trim();
     if (extra) lines.push('Also: ' + extra);
     document.getElementById('out').value =
@@ -127,12 +187,28 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
   document.querySelectorAll('.chip').forEach(function (c) {
     c.addEventListener('click', function () {
       var t = c.dataset.trait;
-      var cur = state[t] && state[t].mode;
+      var cur = traits[t] && traits[t].mode;
       var next = !cur ? 'steal' : (cur === 'steal' ? 'skip' : null);
       c.classList.remove('steal', 'skip');
-      if (next) { state[t] = { group: c.dataset.group || '', mode: next }; c.classList.add(next); }
-      else delete state[t];
+      if (next) { traits[t] = { group: c.dataset.group || '', mode: next }; c.classList.add(next); }
+      else delete traits[t];
       c.querySelector('.ic').textContent = next === 'steal' ? '✓' : (next === 'skip' ? '✕' : '·');
+      rebuild();
+    });
+  });
+
+  // pick-one option cards; inside a .q[data-answer] they also grade themselves
+  document.querySelectorAll('.opt[data-group]').forEach(function (o) {
+    o.addEventListener('click', function () {
+      document.querySelectorAll('.opt[data-group="' + o.dataset.group + '"]')
+        .forEach(function (s) { s.classList.remove('sel', 'right', 'wrong'); });
+      o.classList.add('sel');
+      picks[o.dataset.group] = o.dataset.value || o.textContent.trim();
+      var q = o.closest('.q');
+      if (q && q.dataset.answer) {
+        q.classList.add('answered');
+        o.classList.add(o.dataset.value === q.dataset.answer ? 'right' : 'wrong');
+      }
       rebuild();
     });
   });

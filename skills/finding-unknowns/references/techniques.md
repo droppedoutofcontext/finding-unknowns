@@ -1,9 +1,10 @@
 # Technique blueprints
 
-Eleven artifact blueprints, grouped by phase. Each entry: when to use it, what
-to build, and what reply the artifact must assemble for the user. All of them
+Eleven blueprints, grouped by phase. Each entry: when to use it, what to
+build, and what reply the artifact must assemble for the user. All of them
 obey the global rules in SKILL.md (self-contained HTML, assembled-reply box,
-impact-first ordering, quiet chrome).
+impact-first ordering, quiet chrome) — except implementation notes, which is
+a file you keep, not an artifact you hand over.
 
 ---
 
@@ -147,7 +148,11 @@ and why. Edge cases get the conservative call and you keep going; a discovery
 that undermines the plan's premise gets **surfaced immediately** — that
 unknown means the problem may need a different solution, not a workaround.
 End with **a few bullets (≈3) to fold into attempt #2** (or into the user's
-mental model). Render as a timeline with plan-vs-reality columns.
+mental model). Keep it as plain markdown in `.unknowns/notes-<topic>.md` —
+this is the one technique where a file beats HTML: you append to it while
+working, and nobody interacts with it until the end. Render an HTML
+timeline (plan vs reality columns) only if the notes are going to a
+reviewer as a standalone document.
 
 **Reply assembled:** the three bullets, pre-formatted as the next prompt's
 addendum.
