@@ -4,6 +4,7 @@
 
 **A Claude Code skill for prompts that are not specs yet.**
 
+[![verify](https://github.com/droppedoutofcontext/finding-unknowns/actions/workflows/verify.yml/badge.svg)](https://github.com/droppedoutofcontext/finding-unknowns/actions/workflows/verify.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-7c6cf0)](#install)
 [![Ideas by @trq212](https://img.shields.io/badge/ideas_by-%40trq212-1c9bf0)](https://x.com/trq212/article/2073100352921215386)
@@ -11,6 +12,8 @@
 **English** · [Русский](README.ru.md)
 
 <img src="docs/four-directions.gif" width="820" alt="Animation: Claude shows four interface directions, the user selects the parts they like, and the artifact assembles the next prompt">
+
+**[Click through the live examples →](https://droppedoutofcontext.github.io/finding-unknowns/)**
 
 </div>
 
@@ -44,6 +47,20 @@ version, and a more terminal-like version.
 You mark: "use C's density, A's header, B's palette, definitely not D". The artifact turns that into an
 implementation prompt. The agent gets concrete constraints instead of "make it better".
 
+## Try it
+
+The whole thesis is that people recognize what they can't describe — so don't read about the
+artifacts, click through them. Each one is exactly what the skill hands you in a real session:
+
+- [Four design directions](https://droppedoutofcontext.github.io/finding-unknowns/examples/design-directions.html) —
+  four honest answers to "make it more professional"; steal and skip pieces until a fifth direction assembles itself.
+- [The interview](https://droppedoutofcontext.github.io/finding-unknowns/examples/share-link-interview.html) —
+  five share-link questions ordered by architectural blast radius, ending in a ready-to-paste implementation prompt.
+- [Quiz me before I merge](https://droppedoutofcontext.github.io/finding-unknowns/examples/merge-quiz.html) —
+  a risk-grouped merge report, then six questions; wrong answers point at the section you skimmed.
+
+Every one ends in an assembled reply: the message you would paste back into the chat.
+
 ## Install
 
 ```text
@@ -51,10 +68,11 @@ implementation prompt. The agent gets concrete constraints instead of "make it b
 /plugin install finding-unknowns@finding-unknowns
 ```
 
-Or copy the skill directly:
+Or copy the skill directly (works for any agent runtime that reads `~/.claude/skills/`):
 
 ```text
-cp -r skills/finding-unknowns ~/.claude/skills/
+git clone https://github.com/droppedoutofcontext/finding-unknowns
+cp -r finding-unknowns/skills/finding-unknowns ~/.claude/skills/
 ```
 
 ## What's inside
@@ -106,11 +124,13 @@ This is not a benchmark or a big scientific claim. It is a sanity check. The val
 magically becomes smarter; it is that the agent turns assumptions into explicit user decisions before
 expensive implementation.
 
-Evals are in [`skills/finding-unknowns/evals/`](skills/finding-unknowns/evals/).
+Evals are in [`skills/finding-unknowns/evals/`](skills/finding-unknowns/evals/). If you run the
+outcome stage described there, please open an issue with the numbers — whichever way they point.
 
-## Post kit
+## Contributing
 
-Russian post draft, short versions, CTAs, and visual notes live in [`docs/post-kit.ru.md`](docs/post-kit.ru.md).
+New technique blueprints, better verifier checks, and eval results are all welcome — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for how the pieces fit together and how to run the checks.
 
 ## Credits
 

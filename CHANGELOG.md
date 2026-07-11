@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **Live examples are now reachable.** GitHub Pages was built and serving, but no
+  README linked to it; both READMEs now lead with the live-examples link under the
+  hero and describe all three artifacts in a "Try it" section.
+- **CONTRIBUTING.md.** Repo map, the exact CI checks to run locally, what a new
+  technique PR must include, and an explicit invitation for outcome-eval results —
+  negative ones included.
+- **README fixes.** CI badge added; the direct-copy install now includes the clone
+  step; the Russian-only post kit no longer occupies a section of the English README.
+
 ## 0.2.0 — 2026-07-10
 
 ### Skill

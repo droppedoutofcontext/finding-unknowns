@@ -4,6 +4,7 @@
 
 **Claude Code skill для случаев, когда промпт ещё не дотягивает до спеки.**
 
+[![verify](https://github.com/droppedoutofcontext/finding-unknowns/actions/workflows/verify.yml/badge.svg)](https://github.com/droppedoutofcontext/finding-unknowns/actions/workflows/verify.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-7c6cf0)](#установка)
 [![Ideas by @trq212](https://img.shields.io/badge/ideas_by-%40trq212-1c9bf0)](https://x.com/trq212/article/2073100352921215386)
@@ -11,6 +12,8 @@
 [English](README.md) · **Русский**
 
 <img src="docs/four-directions.gif" width="820" alt="Анимация: Claude показывает четыре направления интерфейса, пользователь выбирает понравившиеся части, а артефакт собирает следующий промпт">
+
+**[Живые примеры — кликни и попробуй →](https://droppedoutofcontext.github.io/finding-unknowns/)**
 
 </div>
 
@@ -44,6 +47,20 @@ editorial-стиль и более терминальный вариант.
 Ты отмечаешь: «берём density из C, header из A, palette из B, D точно нет». Артефакт собирает это в
 реализационный промпт. Агент получает не абстрактное «сделай лучше», а конкретные constraints.
 
+## Попробовать вживую
+
+Весь тезис скилла в том, что люди узнают то, что не могут описать словами — поэтому артефакты лучше не
+читать, а кликать. Каждый пример ниже — ровно то, что скилл отдаёт в реальной сессии:
+
+- [Four design directions](https://droppedoutofcontext.github.io/finding-unknowns/examples/design-directions.html) —
+  четыре честных ответа на «сделай попрофессиональнее»; забираешь и выкидываешь куски, пока не соберётся пятое направление.
+- [The interview](https://droppedoutofcontext.github.io/finding-unknowns/examples/share-link-interview.html) —
+  пять вопросов про share-link в порядке архитектурного blast radius, в конце — готовый реализационный промпт.
+- [Quiz me before I merge](https://droppedoutofcontext.github.io/finding-unknowns/examples/merge-quiz.html) —
+  отчёт о рисках диффа и шесть вопросов; неверные ответы указывают на секцию, которую ты пролистал.
+
+Каждый заканчивается assembled reply — сообщением, которое вставляешь обратно в чат.
+
 ## Установка
 
 ```text
@@ -51,10 +68,11 @@ editorial-стиль и более терминальный вариант.
 /plugin install finding-unknowns@finding-unknowns
 ```
 
-Либо скопируй скилл напрямую:
+Либо скопируй скилл напрямую (подходит для любого agent runtime, который читает `~/.claude/skills/`):
 
 ```text
-cp -r skills/finding-unknowns ~/.claude/skills/
+git clone https://github.com/droppedoutofcontext/finding-unknowns
+cp -r finding-unknowns/skills/finding-unknowns ~/.claude/skills/
 ```
 
 ## Что внутри
@@ -106,11 +124,14 @@ node scripts/verify_artifact.mjs <file>
 «становится умнее», а в том, что он переводит assumptions в явные решения пользователя до дорогой
 реализации.
 
-Evals лежат в [`skills/finding-unknowns/evals/`](skills/finding-unknowns/evals/).
+Evals лежат в [`skills/finding-unknowns/evals/`](skills/finding-unknowns/evals/). Если прогонишь
+outcome-стадию, описанную там, — открой issue с цифрами, какими бы они ни оказались.
 
-## Материалы для поста
+## Контрибьюции
 
-Черновик поста, короткие версии, CTA и список визуалов лежат в [`docs/post-kit.ru.md`](docs/post-kit.ru.md).
+Новые техники, более строгие проверки верификатора и результаты evals — welcome; как всё устроено и
+как запускать проверки, описано в [CONTRIBUTING.md](CONTRIBUTING.md). Материалы для поста о проекте
+лежат в [`docs/post-kit.ru.md`](docs/post-kit.ru.md).
 
 ## Благодарности
 
