@@ -9,7 +9,14 @@
   technique PR must include, and an explicit invitation for outcome-eval results —
   negative ones included.
 - **README fixes.** CI badge added; the direct-copy install now includes the clone
-  step; the Russian-only post kit no longer occupies a section of the English README.
+  step; the Russian-only post kit no longer occupies a section of the English README;
+  the Example section now describes the four directions the live demo actually shows;
+  the decisions ledger is finally mentioned; the verify command is runnable from the
+  repo root as written.
+- **Keyboard-accessible chips.** Tri-state chips in the reply skeleton and the
+  design-directions example are real `<button>`s now, not spans — they work from the
+  keyboard and announce themselves to screen readers. The skeleton also deduplicates
+  the quiz re-read list, matching the merge-quiz example.
 
 ## 0.2.0 — 2026-07-10
 

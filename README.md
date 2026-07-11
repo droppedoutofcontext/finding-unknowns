@@ -41,8 +41,9 @@ The loop is:
 ## Example
 
 If you ask "make this dashboard better", the skill should not immediately rewrite the UI. It can first
-render four directions for the same screen: a calm ops console, a dense analytics view, an editorial
-version, and a more terminal-like version.
+render four directions for the same screen: an ops console for teams who live in it, an editorial
+weekly report, a card board for triage, and a terminal view. (This exact scenario is the first live
+example below.)
 
 You mark: "use C's density, A's header, B's palette, definitely not D". The artifact turns that into an
 implementation prompt. The agent gets concrete constraints instead of "make it better".
@@ -91,6 +92,10 @@ The skill picks a technique for the kind of unknown:
 - **The buy-in doc** — pre-answer reviewer or stakeholder objections.
 - **Quiz me before I merge** — check whether you understand your own diff before merging.
 
+Decisions made through an artifact don't evaporate with the chat turn: the skill appends them to
+`.unknowns/decisions.md` — a growing, committable spec it re-reads on every trigger, so nothing
+already settled gets asked twice.
+
 Full rules and technique blueprints live in [`SKILL.md`](skills/finding-unknowns/SKILL.md) and
 [`references/techniques.md`](skills/finding-unknowns/references/techniques.md).
 
@@ -102,10 +107,10 @@ keep all JS/CSS inline, and act as a throwaway UI for making decisions.
 The required part is the assembled reply: a textarea with the next prompt and a copy button. If the
 artifact does not turn user clicks into a concrete prompt diff, it does not close the loop.
 
-Before handing an artifact over, the skill verifies it with:
+Before handing an artifact over, the skill verifies it (from the repo root):
 
 ```text
-node scripts/verify_artifact.mjs <file>
+node skills/finding-unknowns/scripts/verify_artifact.mjs <file>
 ```
 
 ## When not to use it
