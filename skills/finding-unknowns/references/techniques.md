@@ -3,7 +3,8 @@
 Eleven blueprints, grouped by phase. Each entry: when to use it, what to
 build, and what reply the artifact must assemble for the user. All of them
 obey the global rules in SKILL.md (self-contained HTML, assembled-reply box,
-impact-first ordering, quiet chrome) — except implementation notes, which is
+impact-first ordering, quiet chrome) and come after its gate: if a few
+questions in chat would settle it, don't build — except implementation notes, which is
 a file you keep, not an artifact you hand over.
 
 ---
@@ -36,8 +37,8 @@ vocabulary the user lacks — color grading, typography, audio mixing, data-viz.
 knowns*) but no words for it. Choose this over Four design directions when
 the user wouldn't yet *recognize* good in this domain.
 
-**Build:** An interactive explainer: a vocabulary ladder (term → plain-English
-meaning → what changing it looks like), a live preview region with sliders
+**Build:** An interactive explainer: a vocabulary ladder (each term, its
+plain-English meaning, and what changing it looks like), a live preview region with sliders
 and/or presets so the user can *feel* each parameter, and preset chips
 ("filmic", "punchy", "flat"). Every slider/preset the user touches is recorded.
 
@@ -126,7 +127,8 @@ decisions the user actually cares about under mechanical steps.
 
 **Build:** The plan **sorted by likelihood-of-tweaking**, not execution order.
 Uncertain choices (schema shapes, API contracts, naming) at the top, each
-flagged with **toggleable alternatives** ("store as JSONB ⇄ separate table")
+flagged with **toggleable alternatives** (store as a JSONB column, or as a
+separate table)
 and annotated type interfaces. The mechanical work — migrations, wiring,
 boilerplate — collapsed at the bottom.
 
@@ -147,7 +149,7 @@ what the plan said, what was actually true, the **conservative call you made**
 and why. Edge cases get the conservative call and you keep going; a discovery
 that undermines the plan's premise gets **surfaced immediately** — that
 unknown means the problem may need a different solution, not a workaround.
-End with **a few bullets (≈3) to fold into attempt #2** (or into the user's
+End with **three bullets to fold into attempt #2** (or into the user's
 mental model). Keep it as plain markdown in `.unknowns/notes-<topic>.md` —
 this is the one technique where a file beats HTML: you append to it while
 working, and nobody interacts with it until the end. Render an HTML
@@ -180,7 +182,7 @@ objections marked.
 The unknown is what *they* don't know about their own change.
 
 **Build:** A merge-readiness report over the diff (grouped by risk, not by
-file), ending in a **short quiz the user must pass** (≈6 questions): "what
+file), ending in a **short quiz the user must pass** (about six questions): "what
 happens to in-flight jobs during the migration?" Wrong answers don't just say
 "wrong" — they **link back to the exact section** the user skimmed.
 

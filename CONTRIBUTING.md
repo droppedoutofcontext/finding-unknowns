@@ -12,15 +12,16 @@ a verifier, evals, and live examples. Here is how the pieces fit and how to chec
 | `skills/finding-unknowns/assets/reply-skeleton.html` | The starting skeleton every artifact adapts: reply plumbing, chips, quiz mechanics. |
 | `skills/finding-unknowns/scripts/verify_artifact.mjs` | Mechanical checks an artifact must pass before it reaches the user. |
 | `skills/finding-unknowns/evals/` | Adherence evals: prompts, fixtures, assertions, and the run/grade protocol. |
-| `docs/` | GitHub Pages site with the [live examples](https://droppedoutofcontext.github.io/finding-unknowns/). |
+| `docs/` | GitHub Pages site: landing page, [live examples](https://droppedoutofcontext.github.io/finding-unknowns/), hero GIF/MP4 and social preview. |
 
 ## Running the checks
 
 The only dependency is Node 20+. CI ([`verify.yml`](.github/workflows/verify.yml)) runs exactly this:
 
 ```bash
-# every shipped artifact must pass the verifier
-for f in skills/finding-unknowns/assets/reply-skeleton.html docs/examples/*.html; do
+# the skeleton (placeholders allowed) and every shipped example must pass the verifier
+node skills/finding-unknowns/scripts/verify_artifact.mjs skills/finding-unknowns/assets/reply-skeleton.html --template
+for f in docs/examples/*.html; do
   node skills/finding-unknowns/scripts/verify_artifact.mjs "$f"
 done
 
@@ -61,6 +62,9 @@ the evidence.
 **Translations.** README translations follow the `README.<lang>.md` pattern and should track
 the English one's structure. The skill itself stays in English (it's read by models), but
 artifacts it produces are always in the user's language — that's rule 1.
+
+**Evals.** Negative evals matter as much as positive ones: a technique that fires on
+"rename this variable" is a bug. If you add a trigger, add a case where it must not fire.
 
 ## Style
 

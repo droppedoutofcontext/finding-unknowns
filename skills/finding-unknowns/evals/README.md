@@ -1,8 +1,14 @@
 # Running the evals
 
-Four realistic tasks, four binary assertions each. [`evals.json`](evals.json)
+Seven realistic tasks, four binary assertions each. [`evals.json`](evals.json)
 holds the prompts and assertions; [`inputs/`](inputs/) holds the fixtures.
 `files` paths in `evals.json` are relative to this directory.
+
+- **Evals 0–3 are positive:** the skill should fire and run its loop.
+- **Evals 4–6 are negative:** a small local change, a cheap UI tweak, and a
+  feature with two independent questions. The skill should stay out of the
+  way: no artifact, at most a few questions in chat, stated defaults. They
+  exist to catch over-triggering, which the positive set can't see.
 
 ## Protocol
 
@@ -30,8 +36,9 @@ node ../scripts/verify_artifact.mjs <artifact.html>
 recognizes the situation and executes the technique correctly — most
 assertions require an interactive HTML artifact, which the baseline never
 produces because nothing tells it to. So the headline number (16/16 vs 3/16
-on Fable 5 and Opus 4.8, single run each) measures "the loop happened", not
-"the result was better". Baselines often *find* the same problems; they just
+on Fable 5 and Opus 4.8, single run each, evals 0–3 only) measures "the loop
+happened", not "the result was better". The negative evals 4–6 were added in
+0.3.0 and have no published numbers yet. Baselines often *find* the same problems; they just
 deliver them as a wall of text instead of decisions the user can click
 through.
 
@@ -62,3 +69,6 @@ issue with the numbers, whichever way they point.
 - **Eval 3** (`inputs/quiz-fixture/`): the diff renames `orders.status` to
   `state` while deployed workers still query `status` (in-flight breakage),
   and quietly stops retrying 4xx responses while raising max attempts.
+- **Eval 4** (`inputs/slugify-fixture/`): the `while (out.includes('--'))`
+  loop rescans the whole string per replacement. Any single-pass rewrite is
+  fine; an artifact or an interview here is a failure.
