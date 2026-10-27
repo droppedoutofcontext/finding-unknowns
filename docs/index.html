@@ -3,47 +3,284 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>finding-unknowns — live examples</title>
+<title>finding-unknowns — a Claude Code skill</title>
+<meta name="description" content="People can't describe what they want. They recognize it instantly. A Claude Code skill that turns vague prompts into small interactive HTML pages that write your next prompt for you.">
+<meta property="og:title" content="finding-unknowns">
+<meta property="og:description" content="A Claude Code skill: point at what you recognize, and the page writes your next prompt.">
+<meta property="og:image" content="https://droppedoutofcontext.github.io/finding-unknowns/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <style>
-  :root{--ink:#17181c;--mut:#6b7080;--line:#e6e7ea}
+  :root{
+    --ink:#17181c; --mut:#646979; --faint:#a4a8b2; --line:#e3e3df;
+    --bg:#efeee9; --card:#fff; --paper:#f6f6f4; --code:#f6f6f4;
+    --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e;
+    --ease:cubic-bezier(.23,1,.32,1);
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#ececee; --mut:#a3a7b3; --faint:#6d717c; --line:#2f3136;
+      --bg:#141518; --card:#1d1e22; --paper:#1a1b1f; --code:#1a1b1f;
+      --steal:#5cc68c; --steal-bg:#183325; --skip:#f08a80;
+    }
+  }
   *{box-sizing:border-box}
-  body{margin:0;padding:48px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
-       color:var(--ink);background:#f6f6f4;max-width:760px;margin-inline:auto}
-  h1{font-size:18px;margin:0 0 6px}
-  .lede{color:var(--mut);margin:0 0 28px;max-width:60ch}
-  a.card{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;
-         padding:18px;margin:0 0 14px;text-decoration:none;color:inherit}
-  a.card:hover{border-color:var(--ink)}
-  a.card b{display:block;margin:0 0 4px}
-  a.card span{color:var(--mut);font-size:12.5px}
-  p.foot{color:var(--mut);font-size:12.5px;margin-top:32px;max-width:60ch}
-  p.foot a{color:inherit}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif}
+  a{color:inherit;text-underline-offset:3px;text-decoration-thickness:1px}
+  code,pre,.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding-left:24px;padding-right:24px}
+  section{padding:72px 0 0}
+  h2{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 20px}
+  h3{font-size:17px;margin:0 0 6px;letter-spacing:-.005em}
+  p{margin:0}
+  .mut{color:var(--mut)}
+
+  /* header */
+  header{padding:22px 0}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{font-weight:700;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+  .brand span{display:inline-block;width:8px;height:8px;border-radius:4px;background:var(--steal);margin-right:9px;vertical-align:1px}
+  nav{display:flex;gap:22px;font-size:15px}
+  nav a{text-decoration:none;color:var(--mut)}
+  nav a:hover{color:var(--ink)}
+
+  /* hero */
+  .hero{padding:48px 0 0;text-align:center}
+  .hero h1{font-size:clamp(34px,6vw,60px);line-height:1.05;letter-spacing:-.035em;margin:0 auto;max-width:15ch;font-weight:700}
+  .hero h1 em{font-style:normal;color:var(--mut)}
+  .hero .lede{font-size:clamp(17px,2.2vw,19px);color:var(--mut);max-width:58ch;margin:20px auto 0}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:30px 0 0}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;font-weight:600;
+       font-size:15px;text-decoration:none;border:1.5px solid var(--ink);transition:transform 160ms var(--ease)}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:var(--ink);color:var(--bg)}
+  .film{margin:44px auto 0;max-width:1080px;border-radius:16px;overflow:hidden;background:var(--card);
+        box-shadow:0 30px 80px rgba(23,24,28,.14),0 4px 14px rgba(23,24,28,.06);aspect-ratio:16/10}
+  .film video,.film img{display:block;width:100%;height:100%;object-fit:cover}
+
+  /* loop */
+  .loop{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;counter-reset:step}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+  .step::before{counter-increment:step;content:"0" counter(step);display:block;font:13px ui-monospace,Menlo,monospace;color:var(--faint);margin-bottom:12px}
+  .step p{font-size:15px;color:var(--mut)}
+
+  /* examples */
+  .examples{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .ex{display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;
+      transition:transform 200ms var(--ease),border-color 200ms var(--ease)}
+  @media (hover:hover) and (pointer:fine){ .ex:hover{transform:translateY(-3px);border-color:var(--ink)} }
+  .ex img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-bottom:1px solid var(--line)}
+  .ex div{padding:16px 18px 18px}
+  .ex p{font-size:14.5px;color:var(--mut)}
+  .ex .go{display:inline-block;margin-top:10px;font-size:14px;font-weight:600}
+
+  /* techniques */
+  .phases{display:grid;grid-template-columns:2fr 1fr 1.2fr;gap:18px}
+  .phase{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .phase h3{font-size:15px}
+  .phase ul{list-style:none;margin:14px 0 0;padding:0;columns:1}
+  .phase.wide ul{columns:2;column-gap:24px}
+  .phase li{break-inside:avoid;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+  .phase li b{display:block;font-weight:600}
+  .phase li span{color:var(--mut);font-size:14px}
+
+  /* gate */
+  .gate{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .gate .g{border:1px solid var(--line);border-radius:12px;padding:20px;background:var(--paper)}
+  .gate .g.on{background:var(--card);border-color:var(--ink)}
+  .gate .g p{font-size:15px;color:var(--mut);margin-top:4px}
+
+  /* install */
+  .install{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  .install>*,.examples>*,.phases>*,.gate>*,.loop>*{min-width:0}
+  .cmd{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .cmd pre{margin:0;font-size:13px;line-height:1.75;white-space:pre;overflow-x:auto;padding-bottom:2px}
+  .cmd .lbl{padding-right:72px}
+  .cmd button{position:absolute;top:12px;right:12px;font:600 13px/1 inherit;font-family:inherit;padding:8px 11px;border-radius:8px;
+              border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;transition:transform 160ms var(--ease)}
+  .cmd button:active{transform:scale(.97)}
+  .cmd .lbl{font-size:13px;color:var(--mut);margin-bottom:8px}
+  .note{font-size:15px;color:var(--mut);max-width:62ch}
+
+  footer{padding:80px 0 56px;color:var(--mut);font-size:14px}
+  footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:24px}
+
+  @media (max-width:900px){
+    .loop{grid-template-columns:1fr 1fr}
+    .examples,.gate,.install{grid-template-columns:1fr}
+    .phases{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .wrap{padding-left:16px;padding-right:16px}
+    nav{gap:14px;font-size:14px}
+    nav .hide-s{display:none}
+    .hero{padding-top:28px}
+    .loop{grid-template-columns:1fr}
+    .phase.wide ul{columns:1}
+    section{padding-top:56px}
+  }
+  @media (prefers-reduced-motion:reduce){ .film video{display:none} .film img.poster{display:block} }
+  .film img.poster{display:none}
 </style>
 </head>
 <body>
-<h1>finding-unknowns — live examples</h1>
-<p class="lede">The skill's whole thesis is that people recognize what they can't describe — so
-don't read about the artifacts, click through them. Each one below is exactly what the skill hands
-you in a real session, ending in a reply written for you.</p>
+<header>
+  <div class="wrap">
+    <a class="brand" href="./"><span></span>finding-unknowns</a>
+    <nav>
+      <a href="#examples">Examples</a>
+      <a class="hide-s" href="#techniques">Techniques</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/droppedoutofcontext/finding-unknowns">GitHub</a>
+    </nav>
+  </div>
+</header>
 
-<a class="card" href="examples/design-directions.html">
-  <b>Four design directions</b>
-  <span>"Make the dashboard look more professional" — four honest answers; you take pieces and
-  reject pieces, and a fifth direction assembles itself.</span>
-</a>
-<a class="card" href="examples/share-link-interview.html">
-  <b>The interview</b>
-  <span>"Add share-via-link, you decide the details" — five questions ordered by architectural
-  blast radius, ending in a ready-to-paste implementation prompt.</span>
-</a>
-<a class="card" href="examples/merge-quiz.html">
-  <b>Quiz me before I merge</b>
-  <span>"I only skimmed the diff — am I ready to merge?" — a risk-grouped report, then six
-  questions; wrong answers point at the section you skimmed.</span>
-</a>
+<main>
+  <div class="wrap hero">
+    <h1>People can’t describe what they want. <em>They recognize it instantly.</em></h1>
+    <p class="lede">A Claude Code skill for prompts that aren’t specs yet. Instead of guessing, Claude builds a small
+      interactive page: you point at what you like, and the page writes your next prompt for you.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install">Install the skill</a>
+      <a class="btn" href="examples/design-directions.html">Try a live example</a>
+    </div>
+    <div class="film">
+      <video autoplay muted loop playsinline preload="metadata" poster="img/hero-poster.jpg"
+             aria-label="Demo: a vague prompt becomes four design directions; the user takes and skips pieces and the page assembles the reply">
+        <source src="hero.mp4" type="video/mp4">
+      </video>
+      <img class="poster" src="img/hero-poster.jpg" alt="The four-directions artifact with a reply assembled from the user's clicks">
+    </div>
+  </div>
 
-<p class="foot">From the <a href="https://github.com/droppedoutofcontext/finding-unknowns">finding-unknowns</a>
-Claude Code skill — an independent packaging of Thariq Shihipar's "A Field Guide to Fable:
-Finding Your Unknowns".</p>
+  <section class="wrap">
+    <h2>The loop</h2>
+    <div class="loop">
+      <div class="step"><h3>Render</h3><p>Claude spots the unknown and builds one self-contained HTML page: options, mocks, questions, a quiz.</p></div>
+      <div class="step"><h3>Point</h3><p>You click what you recognize. Take a piece, skip a piece, pick an answer, move a slider.</p></div>
+      <div class="step"><h3>Paste</h3><p>The page assembles your reply as you go. Copy it into the chat, or send it directly where the host allows.</p></div>
+      <div class="step"><h3>Build</h3><p>Claude builds against decisions you made, and saves them to <code>.unknowns/decisions.md</code> so nothing is asked twice.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="examples">
+    <h2>Click through the real thing</h2>
+    <div class="examples">
+      <a class="ex" href="examples/design-directions.html">
+        <img src="img/design-directions.jpg" alt="Four directions for a support dashboard" loading="lazy">
+        <div>
+          <h3>Four design directions</h3>
+          <p>“Make the dashboard look more professional.” Four honest answers; take and skip pieces until a fifth assembles itself.</p>
+          <span class="go">Open example</span>
+        </div>
+      </a>
+      <a class="ex" href="examples/share-link-interview.html">
+        <img src="img/share-link-interview.jpg" alt="Interview about a share-via-link feature" loading="lazy">
+        <div>
+          <h3>The interview</h3>
+          <p>“Add share-via-link, you decide the details.” Five questions ordered by architectural blast radius.</p>
+          <span class="go">Open example</span>
+        </div>
+      </a>
+      <a class="ex" href="examples/merge-quiz.html">
+        <img src="img/merge-quiz.jpg" alt="Merge readiness report and quiz" loading="lazy">
+        <div>
+          <h3>Quiz me before I merge</h3>
+          <p>“I only skimmed the diff.” A risk-grouped report, then six questions; wrong answers point at what you skimmed.</p>
+          <span class="go">Open example</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="wrap" id="techniques">
+    <h2>Eleven techniques, one loop</h2>
+    <div class="phases">
+      <div class="phase wide">
+        <h3>Before building</h3>
+        <ul>
+          <li><b>Blindspot pass</b><span>what you couldn’t know to ask</span></li>
+          <li><b>Teach me my unknowns</b><span>vocabulary for taste you can’t name</span></li>
+          <li><b>Four design directions</b><span>compose a fifth from parts</span></li>
+          <li><b>Mock before you wire</b><span>placement and interaction, cheaply</span></li>
+          <li><b>Brainstorm on an effort axis</b><span>quick wins to quarter-long bets</span></li>
+          <li><b>The interview</b><span>decisions by blast radius</span></li>
+          <li><b>Point at a reference</b><span>prove you understood it first</span></li>
+          <li><b>The tweakable plan</b><span>sorted by what you’ll change</span></li>
+        </ul>
+      </div>
+      <div class="phase">
+        <h3>During</h3>
+        <ul>
+          <li><b>Implementation notes</b><span>plan versus reality, logged as you go</span></li>
+        </ul>
+      </div>
+      <div class="phase">
+        <h3>After</h3>
+        <ul>
+          <li><b>The buy-in doc</b><span>objections answered before review</span></li>
+          <li><b>Quiz me before I merge</b><span>do you know your own diff?</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <h2>It knows when to stay out of the way</h2>
+    <div class="gate">
+      <div class="g"><h3>Stated defaults</h3><p>Cheap to redo, or nobody there to answer. Claude lists its assumptions in a line and builds.</p></div>
+      <div class="g"><h3>A question in chat</h3><p>One to three independent questions settle it. No page needed.</p></div>
+      <div class="g on"><h3>An artifact</h3><p>The answer has to be seen to be chosen, or there are many questions that depend on each other.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="install">
+    <h2>Install</h2>
+    <div class="install">
+      <div class="cmd">
+        <div class="lbl">As a Claude Code plugin</div>
+        <pre id="c1">/plugin marketplace add droppedoutofcontext/finding-unknowns
+/plugin install finding-unknowns@finding-unknowns</pre>
+        <button type="button" data-copy="c1">Copy</button>
+      </div>
+      <div class="cmd">
+        <div class="lbl">Or as a plain skill</div>
+        <pre id="c2">git clone https://github.com/droppedoutofcontext/finding-unknowns
+cp -r finding-unknowns/skills/finding-unknowns ~/.claude/skills/</pre>
+        <button type="button" data-copy="c2">Copy</button>
+      </div>
+    </div>
+    <p class="note" style="margin-top:18px">Then just work. The skill triggers on vague or high-stakes requests, or when you ask
+      “what am I missing?”, “interview me”, or “quiz me before I merge”.</p>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Adapted from Thariq Shihipar’s
+      <a href="https://x.com/trq212/article/2073100352921215386">A Field Guide to Fable: Finding Your Unknowns</a>.
+      Independent project, not affiliated with Anthropic.</span>
+    <span><a href="https://github.com/droppedoutofcontext/finding-unknowns">GitHub</a> · MIT</span>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = document.getElementById(b.dataset.copy).textContent;
+      function ok() { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1600); }
+      function manual() {
+        var r = document.createRange(); r.selectNodeContents(document.getElementById(b.dataset.copy));
+        var s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selected';
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, manual);
+      else manual();
+    });
+  });
+</script>
 </body>
 </html>
