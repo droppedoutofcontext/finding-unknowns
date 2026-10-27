@@ -17,7 +17,8 @@ jobs:
       - name: Verify skeleton and example artifacts
         run: |
           set -e
-          for f in skills/finding-unknowns/assets/reply-skeleton.html docs/examples/*.html; do
+          node skills/finding-unknowns/scripts/verify_artifact.mjs skills/finding-unknowns/assets/reply-skeleton.html --template
+          for f in docs/examples/*.html; do
             echo "== $f"
             node skills/finding-unknowns/scripts/verify_artifact.mjs "$f"
           done

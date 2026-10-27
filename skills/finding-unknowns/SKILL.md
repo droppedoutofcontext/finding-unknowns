@@ -1,17 +1,20 @@
 ---
 name: finding-unknowns
 description: >-
-  Surface hidden requirements before building by generating small interactive
-  HTML artifacts — blindspot passes, interviews, design-direction pickers,
-  clickable mocks, tweakable plans, merge quizzes (from
-  Thariq Shihipar's "A Field Guide to Fable: Finding Your Unknowns"). Use
-  whenever a request is vague, aesthetic, or underspecified ("make it nicer",
-  "improve this", "add notifications", "you decide the details"), when planning
-  an ambiguous or architecturally risky feature, when porting a reference
-  implementation, when presenting a plan or brainstorm options, or before
-  merging/shipping a large change — even if the user never says "unknowns" or
-  "HTML". Also use when the user asks to be interviewed or quizzed about a
-  feature, or asks "what am I missing?".
+  Builds a small interactive HTML page the user clicks through (option cards,
+  steal/skip chips, sliders, a quiz) that assembles a precise reply for them
+  to paste back, so hidden requirements surface before expensive work. Use
+  when a request is underspecified AND a wrong guess is costly to redo: vague
+  aesthetic or quality asks about a page, screen or design ("make it look
+  professional", "it looks off"); a new feature with open architectural
+  choices ("help me pin this down before we build"); porting or matching a
+  reference implementation; a plan that needs sign-off; plan-vs-reality notes
+  during a long build the user expects to diverge; a large diff the user
+  admits they skimmed before merging. Also use when the user asks to be
+  interviewed or quizzed, or asks "what am I missing?". Do not use for small,
+  local or easily reversible work (speed up or refactor one function, fix a
+  bug, rename), when 1-3 quick questions in chat would settle it, or when no
+  human is there to click (headless or subagent runs).
 ---
 
 # Finding Your Unknowns
@@ -19,40 +22,48 @@ description: >-
 Turn vague requests into precise prompts by surfacing what nobody has said out
 loud yet. Instead of guessing and building, spend a few cheap minutes on a
 small interactive HTML artifact that lets the user *recognize* their
-requirements — then implement against a spec that actually matches what's in
-their head.
+requirements, then implement against a spec that matches what's in their head.
+Adapted from Thariq Shihipar's essay "A Field Guide to Fable: Finding Your
+Unknowns".
+
+All paths below are relative to this skill's base directory (shown when the
+skill loads). Your working directory is the user's project, so call scripts
+by absolute path: `node <skill-dir>/scripts/verify_artifact.mjs <artifact>`.
 
 ## Why this works
 
-The map is not the territory: the prompt you received is the map; the result
-the user actually wants is the territory. The gap between them is made of
-unknowns, and they come in four kinds:
+The prompt is the map; the result the user wants is the territory. The gap
+between them is made of unknowns:
 
 |                       | You know it                          | You don't know it                                  |
 |-----------------------|--------------------------------------|----------------------------------------------------|
 | **User knows it**     | Known knowns — already in the prompt | **Unknown knowns** — the user's unstated taste, standards, house rules |
-| **User doesn't know** | Known unknowns — open questions someone already noticed | **Unknown unknowns** — factors nobody has considered yet, including how good the result could even be |
+| **User doesn't know** | Known unknowns — open questions someone already noticed | **Unknown unknowns** — factors nobody has considered yet |
 
-Result quality is bottlenecked by the right-hand column. People are bad at
-*stating* their standards but excellent at *recognizing* them: show four
-rendered design directions and they will point instantly; ask "what style do
-you want?" and they will shrug. So the job is to build cheap interactive
-artifacts that move unknowns leftward into the prompt **before** expensive
-implementation — every explainer, brainstorm, interview, and prototype is a
-cheap way to find out what you didn't know.
+Quality is bottlenecked by the right-hand column. People are bad at *stating*
+their standards and excellent at *recognizing* them: show four rendered
+directions and they point instantly; ask "what style?" and they shrug.
+Sometimes the unknown isn't a detail but a sign the problem should be solved
+another way. Surface that; don't guess past it.
 
-Unaccounted unknowns make a prompt fail in both directions at once: too
-specific, and you follow the instructions into a wall when a pivot was the
-right move; too vague, and you fill the gaps with industry-default choices
-that don't fit this task. And an unknown isn't always a detail — sometimes
-it's the discovery that the problem should be solved a different way
-altogether. Surface that; don't guess past it.
+## First: defaults, chat, or artifact?
 
-## When NOT to use this
+Use the cheapest channel that settles the blocking unknown.
 
-If the request is already crisp and small (known knowns all the way down),
-just do the work. An artifact for "fix this typo" is theater. Reach for this
-skill when ambiguity × cost-of-redoing is high.
+1. **Proceed with stated defaults** when a wrong guess is cheap to redo (one
+   function, a bug fix, a copy tweak), when the user said "just do it" or
+   "your call", or when no human can answer (headless run, subagent, CI).
+   List each assumption in one line, then build.
+2. **Ask in chat** when 1–3 independent questions settle it and each option
+   fits in a sentence. Use a question tool if the host has one. No artifact.
+3. **Build an artifact** only when at least one of these holds:
+   - the answer has to be seen to be chosen (visual, layout, aesthetic);
+   - there are 4+ questions, or the questions depend on each other;
+   - options need side-by-side comparison;
+   - the user asked to be interviewed or quizzed.
+
+If torn between 2 and 3, pick 2, and escalate to an artifact if the answers
+come back "not sure".
 
 ## Choosing a technique
 
@@ -71,131 +82,105 @@ skill when ambiguity × cost-of-redoing is high.
 | Post  | Large diff about to merge | Quiz me before I merge |
 
 Diagnose which quadrant is blocking you, pick the row that matches, then read
-its blueprint in [references/techniques.md](references/techniques.md) before
-building.
+its blueprint in `references/techniques.md` before building.
 
 Two calibrations before you build:
 
-- **Anchor on the user's starting point.** Where are they in their thinking,
-  and how well do they know this domain and this codebase? A blindspot pass
-  for a newcomer and for the module's author contain entirely different
-  cards. If you don't know their starting point, ask — one sentence from
-  them changes what you build.
+- **Anchor on the user's starting point.** A blindspot pass for a newcomer
+  and for the module's author contain entirely different cards. If you don't
+  know where they stand, ask; one sentence from them changes what you build.
 - **Showing options only works if the user can recognize good.** If they
-  don't yet know what good looks like in this domain, four variations just
-  produce a shrug — teach the vocabulary first (Teach me my unknowns), then
-  show directions.
+  don't yet know what good looks like in this domain, teach the vocabulary
+  first (Teach me my unknowns), then show directions.
 
 ## Rules for every artifact
 
-HTML, because this information is spatial — options, diffs, timelines;
-markdown flattens them. Trade a document the user would skim for one they'll
-actually read.
+HTML, because this information is spatial: options, diffs, timelines.
+Markdown flattens them.
 
 1. **One self-contained HTML file, in the user's language.** Inline all
-   CSS/JS, no CDNs, no fetches — it must open from `file://` and still work
-   next year; put the `<script>` at the end of `<body>`. Save it out of git's
-   way (a scratch directory, or a git-ignored `.unknowns/` in the project),
-   named `<topic>-<technique>.html`. Render with the environment's
-   artifact/canvas tool if one exists; otherwise write the file and open it
-   (`open` on macOS, `xdg-open` on Linux, `start` on Windows).
+   CSS/JS, no CDNs, no fetches: it must open from `file://` and still work
+   next year. Put the `<script>` at the end of `<body>`. Name it
+   `<topic>-<technique>.html` and save it to the session's scratch directory
+   if the host gives one, else to `.unknowns/` in the project. If the host
+   has an artifact or canvas tool, render it there and satisfy that tool's
+   page contract (the skeleton's color tokens and dark-mode block are built
+   for it). Otherwise open the file (`open`, `xdg-open` or `start`) and always
+   print its absolute path, since nothing opens in a remote session.
 
-2. **The artifact writes the user's next message for them.** Every selection
-   control (checkbox, steal/skip chip, toggle, slider, radio) feeds a live
-   "assembled reply" textarea with a copy button — the user clicks through,
-   copies, pastes back, and you receive a precise prompt instead of a shrug.
-   An artifact that doesn't produce the next prompt is a dead end. The
-   artifact also explains its own game, quietly: the lede names the decision
-   being extracted, a muted one-line hint explains the controls and that the
-   assembled reply gets pasted back, and a collapsed "What is this?" holds
-   the technique description — a first-time user must be able to play
-   without the chat open. Copy must
-   work everywhere: try the clipboard API, fall back to
-   `select()` + `execCommand('copy')`, and leave the textarea selectable for
-   a manual copy — sandboxed viewers block the clipboard API silently. Start
-   from [assets/reply-skeleton.html](assets/reply-skeleton.html): it has this
-   plumbing ready to adapt — tri-state trait chips, pick-one option groups,
-   self-grading quiz questions, reply rebuild, resilient copy. Delete the
-   mechanics your technique doesn't use rather than inventing new ones.
+2. **The artifact writes the user's next message.** Start from
+   `assets/reply-skeleton.html`. Keep its reply block (`#out`, `#extra`,
+   `#copyBtn`, `#copied`, `#sendBtn`) and its copy handler unchanged. Every
+   control must update the reply through `rebuild()`. Reuse the chips, option
+   cards and quiz where they fit; add a slider, checkbox, toggle or table
+   only when the blueprint calls for one. The page explains itself: a lede
+   naming the decision, a one-line hint on how to use it and that the reply
+   gets pasted back, and the "What is this?" section.
 
 3. **Order by decision impact, not execution order.** Biggest architectural
-   blast radius first; the choices most likely to be tweaked at the top;
-   mechanical/obvious work collapsed at the bottom. The user's attention is
-   the scarce resource — spend it where their answer changes the outcome.
+   blast radius first, the choices most likely to be tweaked at the top,
+   mechanical work collapsed at the bottom.
 
 4. **Show, don't interrogate.** A slider with a live before/after preview
    beats "how much contrast do you want?". Four rendered directions beat
    "what style?". Teach the professional vocabulary while you're at it, so
    the user's *next* prompt can be precise.
 
-5. **Quiet chrome, faithful content.** The artifact's own UI is a form the
-   user fills, not a poster. Keep the skeleton's design system untouched:
-   one font stack, its three text sizes, monochrome chrome where color
-   appears only as the user's own decision state (steal / skip / selected)
-   and never as decoration, whitespace over boxes, no gradients or shadows.
-   Extra styling lives only *inside* `.preview` regions — and there it
-   isn't free creativity either: a preview depicts the thing being decided,
-   in its style — the project's real look (placement mocks, before/afters)
-   or a candidate look proposed for it (design directions), never a generic
-   demo UI. All microcopy — hints, labels, the assembled reply — is plain
-   prose: no arrow chains, no glyph shorthand, no lists glued together with
-   semicolons. Short sentences or bullet lists instead. Every extra font
-   size, color, or notation in the chrome is cognitive load spent on
-   parsing instead of deciding.
+5. **Quiet chrome, faithful content.** Don't restyle the skeleton: no new
+   fonts, sizes, colors, gradients or shadows outside `.preview`. Color in
+   the chrome means only the user's decision state. Inside `.preview`, show
+   the thing being decided in its real or proposed style, never a generic
+   demo. Microcopy and the reply are plain sentences or bullets, with no
+   arrows or symbol shorthand.
 
 6. **Throwaway fidelity.** The mock only needs to be real enough to answer
    the question it was built for. Don't wire real data into a placement test.
 
 7. **Verify before handing over.** Run
-   `node scripts/verify_artifact.mjs <file>`
-   ([source](scripts/verify_artifact.mjs)) — or equivalent checks if node is
-   unavailable: inline JS parses, every id referenced from JS exists in the
-   markup, no external URLs, script sits at the end of body. A broken copy
-   button kills the whole loop silently. If a browser tool is available,
-   also open the artifact and click one control — confirm the assembled
-   reply actually changes. The static checks can't catch a listener that
-   never fires.
+   `node <skill-dir>/scripts/verify_artifact.mjs <artifact>`, or check by
+   hand if node is unavailable: inline JS parses, every id referenced from JS
+   exists, no external URLs, script at the end of body, reply plumbing
+   intact. If a browser tool is available, also open the artifact and click
+   one control to confirm the reply changes; a static check can't catch a
+   listener that never fires.
 
 ## The decisions ledger
 
-A decision the user makes through an artifact outlives the turn — persist
-it. Keep `.unknowns/decisions.md` in the project: one dated line per
-accepted decision ("2026-07-10 — share links: expiring token, 7 days,
-revocable"). When this skill triggers, read the ledger first and don't
-re-ask anything already settled there; a new round appends its accepted
-decisions at the end. The generated HTML is throwaway — git-ignore
-`.unknowns/*.html` — but the ledger is the project's growing spec, worth
-committing. Implementation notes (technique 9) live next to it as
-`.unknowns/notes-<topic>.md`.
+A decision the user makes through an artifact outlives the turn. Once the
+user accepts decisions, append them to `.unknowns/decisions.md` in the
+project, one dated line each ("2026-07-10 — share links: expiring token,
+7 days, revocable"), and say in one line that you did. When this skill
+triggers, read the ledger first and don't re-ask anything already settled.
+The ledger is worth committing; the HTML is throwaway. Never edit
+`.gitignore`, create branches or commit without asking. Implementation notes
+(technique 9) live next to the ledger as `.unknowns/notes-<topic>.md`.
 
 ## Workflow
 
-1. Detect that the blocking problem is an unknown, not missing effort.
-   Check `.unknowns/decisions.md` — what's already settled shapes what's
-   still unknown.
-2. Pick from the table the cheapest technique that answers the blocking
-   question; read its blueprint. One artifact per round — blending techniques
-   inside a single artifact is fine when they serve the same decision.
-3. Build the artifact and hand it to the user; say in one sentence what
+1. Confirm the blocking problem is an unknown, not missing effort, and pass
+   the gate above. Check `.unknowns/decisions.md` for what's already settled.
+2. Pick the cheapest technique that answers the blocking question and read
+   its blueprint. One artifact per round; blending techniques inside one
+   artifact is fine when they serve the same decision.
+3. Build the artifact, verify it, hand it over, and say in one sentence what
    decision it's meant to extract.
-4. The user interacts and pastes back the assembled reply. Receive it with
-   care — this step is where the loop's value lands or leaks:
-   - Anything left unanswered is a "you decide"; say which defaults you're
-     choosing, in one line, so silence never turns into a silent guess.
-   - If two selections contradict each other, or the free note contradicts
-     a selection, ask about that one conflict in chat — don't rebuild the
+4. Receive the pasted reply with care. This is where the loop's value lands
+   or leaks.
+   - Anything left unanswered is a "you decide": name the defaults you're
+     choosing in one line, so silence never turns into a silent guess.
+   - If two selections contradict each other, or the free note contradicts a
+     selection, ask about that one conflict in chat. Don't rebuild the
      artifact.
-   - Play back the accepted decisions in one short paragraph before
-     building, and append them to the ledger.
-5. Fold the answers into the implementation prompt (or the plan, or the PR)
-   and proceed. One exception before coding: if the accepted decisions were
-   composed from pieces of different options ("B, but A's header and D's
-   density") and redoing is expensive, nobody has actually seen that
-   combination — re-render it once as a final mock for sign-off, one round
-   of tweaks at most. For web UIs a mock costs about as much as the real
-   thing, so implement on a branch and show it live instead. For a big
-   build, suggest starting implementation in a fresh
-   session whose prompt is the artifacts themselves — the spec, the
-   prototype, the decisions table, the notes from the previous attempt;
-   planning context is noise once building starts. During long builds, keep
-   implementation notes; before risky merges, offer the quiz.
+   - Play back the accepted decisions in one short paragraph and append them
+     to the ledger.
+5. Fold the answers into the implementation prompt, plan or PR, and proceed.
+   - If the accepted design was composed from pieces of different options
+     ("B, but A's header and D's density") and redoing is expensive, nobody
+     has seen that combination yet. Render it once as a final mock for
+     sign-off, one round of tweaks at most. For web UIs, where a mock costs
+     about as much as the real thing, build it and show it live instead.
+   - For a big build, suggest starting implementation in a fresh session
+     whose prompt is the artifacts themselves: the spec, the prototype, the
+     decisions, the notes from the last attempt.
+   - During long builds keep implementation notes; before risky merges,
+     offer the quiz.

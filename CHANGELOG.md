@@ -1,5 +1,56 @@
 # Changelog
 
+## 0.3.0 — 2026-10-27
+
+### Skill
+- **A gate before every artifact.** The skill now picks the cheapest channel
+  first: stated defaults when a wrong guess is cheap or nobody can answer,
+  one to three questions in chat when that settles it, an artifact only when
+  the answer has to be seen or the questions depend on each other.
+- **Narrower trigger.** The description names when to fire and, for the first
+  time, when not to: small local changes, cheap tweaks, headless runs. The
+  essay credit moved from the description into the body.
+- **Executable as written.** Script paths are absolute from the skill's base
+  directory; artifacts go to the host's scratch directory when it has one;
+  the ledger is created only after decisions are accepted, and the skill
+  never edits `.gitignore`, branches or commits without asking.
+- **Rules 2 and 5 rewritten** shorter, and the blueprint/skeleton conflict
+  resolved: blueprints may add a slider, checkbox or toggle as long as it
+  feeds `rebuild()`. Arrow shorthand removed from the blueprints.
+
+### Skeleton and verifier
+- **Honest copy button.** It only says "Copied" when a copy actually
+  happened; otherwise it leaves the text selected and says how to copy. The
+  three live examples got the same fix.
+- **Send to chat.** When the host exposes a way for a page to post into the
+  chat, the skeleton shows a Send button next to Copy.
+- **Skeleton bugs fixed:** a quote in a question no longer breaks the
+  reply; the same chip label under two directions keeps two states; quiz
+  answers lock after the first pick and say "Correct" or "Not quite" in text,
+  not only color; unanswered questions are listed as "you decide"; the reply
+  names the artifact it came from.
+- **Dark mode and tokens.** Every skeleton color is a token, with a dark set.
+- **Verifier:** catches CSS `url()`, `@import`, protocol-relative and
+  unquoted external URLs, XHR and WebSocket; parse-checks each script on its
+  own and skips JSON data blocks; requires a real `#out` textarea, a
+  `#copyBtn` button and the `execCommand` fallback; flags leftover skeleton
+  placeholders (`--template` skips that for the skeleton itself).
+- **Negative evals 4–6** catch over-triggering: a small local change, a cheap
+  UI tweak, and a feature with two independent questions.
+
+### Repo
+- **New hero.** A 22-second motion piece built in Remotion replaces the old
+  wireframe GIF: the real four-directions artifact, chips flying into the
+  assembled reply, the reply landing in the chat and the ledger, then four
+  more techniques. GIF for the README, MP4 for the site.
+- **Landing page.** `docs/index.html` is now a real landing: the loop, the
+  three live examples with previews, the eleven techniques, the gate,
+  install. Light and dark, phone-width safe. Social preview image included.
+- **READMEs rewritten** in English and Russian around the new framing.
+- **Keyboard-accessible chips** in the skeleton and the design-directions
+  example, and CONTRIBUTING.md with the repo map and the CI checks.
+- The Russian post kit and the old GIF/WebP moved out of the public repo.
+
 ## 0.2.0 — 2026-07-10
 
 ### Skill

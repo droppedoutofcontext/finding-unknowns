@@ -6,70 +6,90 @@
 <title>ARTIFACT TITLE</title>
 <style>
   /* Design contract — quiet chrome, faithful content. Keep this system
-     as-is: one font stack, three text sizes (18/14.5/12.5), monochrome
+     as-is: one font stack, three prose sizes (18/14.5/12.5), monochrome
      chrome — color appears ONLY as the user's own decision state (steal /
      skip / selected / right / wrong), never as decoration — whitespace over
-     boxes, no gradients or shadows. Extra styles live only INSIDE .preview
-     regions, and they are not free creativity — a .preview depicts the
-     thing being decided: the project's real look (placement mocks,
-     before/afters) or a candidate look proposed for it (design
-     directions). Never a generic demo UI. */
+     boxes, no gradients or shadows. Every color is a token below, with a
+     dark-mode set. Extra styles live only INSIDE .preview regions, and they
+     are not free creativity — a .preview depicts the thing being decided:
+     the project's real look (placement mocks, before/afters) or a candidate
+     look proposed for it (design directions). Never a generic demo UI. */
   :root{
-    --ink:#17181c; --mut:#6b7080; --line:#e6e7ea;
+    --ink:#17181c; --mut:#646979; --line:#e6e7ea;
+    --bg:#f6f6f4; --card:#fff; --field:#fcfcfb; --sel:#f1f1ee;
     --steal:#177245; --steal-bg:#e8f5ee; --skip:#b3261e; --skip-bg:#fdecea;
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#ececee; --mut:#a3a7b3; --line:#34363c;
+      --bg:#17181b; --card:#1f2024; --field:#1b1c20; --sel:#2a2b30;
+      --steal:#5cc68c; --steal-bg:#183325; --skip:#f08a80; --skip-bg:#3a1d1b;
+    }
   }
   *{box-sizing:border-box}
   body{margin:0;padding:28px 24px 80px;font:14.5px/1.5 ui-sans-serif,system-ui,sans-serif;
-       color:var(--ink);background:#f6f6f4;max-width:1100px;margin-inline:auto}
+       color:var(--ink);background:var(--bg);max-width:1100px;margin-inline:auto}
   h1{font-size:18px;margin:0 0 6px}
   h2{font-size:12.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
      color:var(--mut);margin:32px 0 10px}
+  a{color:inherit;text-underline-offset:3px}
   .lede{color:var(--mut);margin:0 0 8px;max-width:70ch}
   .sub{color:var(--mut);font-size:12.5px}
   .hint{margin:0 0 6px;max-width:70ch}
   details.how{margin:0 0 24px;font-size:12.5px;color:var(--mut);max-width:70ch}
   details.how summary{cursor:pointer;width:max-content}
   details.how p{margin:8px 0 0}
+  button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
-  /* --- layout: white cards on the quiet background, one gap size --- */
-  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px}
+  /* --- layout: cards on the quiet background, one gap size --- */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
   .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
 
   /* --- selectable option card (interview answers, placements, verdicts).
          Pick-one within a data-group; wired by the script below. --- */
-  .opt{cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:8px;
-       padding:12px 14px;font:inherit;text-align:left;width:100%}
-  .opt.sel{border-color:var(--ink);background:#f1f1ee}
+  .opt{cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:inherit;
+       border-radius:8px;padding:12px 14px;font:inherit;text-align:left;width:100%}
+  .opt.sel{border-color:var(--ink);background:var(--sel)}
   .opt .why-opt{display:block;color:var(--mut);font-size:12.5px;margin-top:4px}
 
   /* --- quiz question: a .q with data-answer; selected .opt turns
          right/wrong, the .why explanation reveals itself. --- */
+  .q .opt{margin-top:8px}
   .opt.right{border-color:var(--steal);background:var(--steal-bg)}
   .opt.wrong{border-color:var(--skip);background:var(--skip-bg)}
   .q .why{display:none;color:var(--mut);font-size:12.5px;margin:8px 0 0}
   .q.answered .why{display:block}
+  .q .verdict{font-weight:600;color:var(--ink)}
 
   /* --- framed region for demo content; style freely INSIDE it only --- */
-  .preview{border:1px dashed var(--line);border-radius:8px;background:#fff;overflow:hidden}
+  .preview{border:1px dashed var(--line);border-radius:8px;background:var(--card);overflow:hidden}
 
-  /* --- tri-state chip: neutral -> steal ("take it") -> skip ("definitely not") --- */
+  /* --- tri-state chip: neutral -> steal ("take it") -> skip ("definitely not").
+         A real <button> so it works from the keyboard too. --- */
   .chip{display:inline-flex;align-items:center;gap:6px;margin:0 6px 8px 0;padding:6px 11px;
-        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer}
-  .chip .ic{font-size:11px;width:13px;text-align:center;color:var(--mut)}
+        border-radius:999px;border:1.5px solid var(--line);background:var(--card);color:inherit;
+        font:inherit;font-size:12.5px;cursor:pointer}
+  .chip .ic{font-size:12.5px;width:13px;text-align:center;color:var(--mut)}
   .chip.steal{border-color:var(--steal);background:var(--steal-bg);color:var(--steal)}
   .chip.skip{border-color:var(--skip);background:var(--skip-bg);color:var(--skip);text-decoration:line-through}
+  .chip.steal .ic,.chip.skip .ic{color:inherit}
 
   /* --- assembled reply block --- */
-  .reply{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+  .reply{margin-top:30px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
   .reply h2,.card h2{margin-top:0}
-  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;
-        padding:12px 14px;font:13px/1.55 ui-monospace,Menlo,monospace;background:#fcfcfb;resize:vertical}
+  .reply textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;color:inherit;
+        padding:12px 14px;font:12.5px/1.6 ui-monospace,Menlo,monospace;background:var(--field);resize:vertical}
   .reply input{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px 14px;
-        margin-top:10px;font:inherit}
-  .copy{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:10px 20px;
-        font-size:13.5px;font-weight:600;cursor:pointer;margin-top:12px}
-  .copied{color:var(--steal);font-weight:600;font-size:12.5px;opacity:0;transition:opacity .2s;margin-left:10px}
-  .copied.on{opacity:1}
+        margin-top:10px;font:inherit;color:inherit;background:var(--field)}
+  .actions{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .copy{background:var(--ink);color:var(--bg);border:0;border-radius:8px;padding:10px 20px;
+        font:inherit;font-weight:600;cursor:pointer}
+  .copy.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+  .copy:active{transform:scale(.97)}
+  .copied{font-weight:600;font-size:12.5px;color:var(--steal)}
+  .copied.manual{color:var(--ink)}
+  [hidden]{display:none !important}
 </style>
 </head>
 <body>
@@ -88,73 +108,85 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
 <!-- ============================================================
      YOUR CONTENT HERE. Build sections as h2 + .card/.grid; put any
      rendered demo inside a .preview. Order sections by decision
-     impact: big calls first. Three ready-made mechanics — delete
-     the ones your technique doesn't use:
+     impact: big calls first. Three ready-made mechanics — reuse the
+     ones that fit, delete the rest. A blueprint that needs another
+     control (slider, checkbox, toggle, confirm/override row) adds it,
+     as long as its listener ends by calling rebuild().
 
      1. Tri-state trait chips (design directions, blindspot fixes):
         .chip with data-trait (text that goes into the reply) and
-        optionally data-group (where it came from).
+        optionally data-group (where it came from). The same trait
+        text under two groups keeps two separate states.
 
      2. Pick-one option cards (interview questions, placements):
         .opt with data-group (the question, shared by its siblings)
         and data-value (the answer text for the reply). Selecting
-        one deselects the rest of its group.
+        one deselects the rest of its group. Groups left unanswered
+        are listed in the reply as "you decide".
 
      3. Quiz questions (merge quiz): wrap pick-one .opt cards in a
         .q with data-answer (the correct data-value) and
-        data-review (where to re-read on a wrong answer); add a
-        .why div with the explanation. Score lands in the reply.
+        data-review (the section to re-read on a wrong answer); add a
+        .why with the explanation and a link to that section's id.
+        The first answer locks; score and re-read list land in the reply.
      ============================================================ -->
 <div>
-  <span class="chip" data-trait="example trait one"><span class="ic">·</span>trait one</span>
-  <span class="chip" data-trait="example trait two" data-group="direction B"><span class="ic">·</span>trait two</span>
+  <button type="button" class="chip" data-trait="example trait one"><span class="ic" aria-hidden="true">·</span>trait one</button>
+  <button type="button" class="chip" data-trait="example trait two" data-group="direction B"><span class="ic" aria-hidden="true">·</span>trait two</button>
 </div>
 
 <div class="grid">
-  <button class="opt" data-group="example question" data-value="answer A">Answer A
+  <button type="button" class="opt" data-group="example question" data-value="answer A">Answer A
     <span class="why-opt">one-line consequence of choosing A</span></button>
-  <button class="opt" data-group="example question" data-value="answer B">Answer B
+  <button type="button" class="opt" data-group="example question" data-value="answer B">Answer B
     <span class="why-opt">one-line consequence of choosing B</span></button>
 </div>
 
-<div class="q card" data-answer="right answer" data-review="the section to re-read">
+<div class="q card" id="q1" data-answer="right answer" data-review="the section to re-read">
   <p>Example quiz question?</p>
-  <button class="opt" data-group="example quiz q" data-value="right answer">Right answer</button>
-  <button class="opt" data-group="example quiz q" data-value="wrong answer">Wrong answer</button>
-  <div class="why">Why the right answer is right, one or two sentences.</div>
+  <button type="button" class="opt" data-group="example quiz q" data-value="right answer">Right answer</button>
+  <button type="button" class="opt" data-group="example quiz q" data-value="wrong answer">Wrong answer</button>
+  <div class="why" aria-live="polite">Why the right answer is right, one or two sentences.
+    <a href="#q1">Re-read the section</a></div>
 </div>
 
-<!-- --- assembled reply: keep the ids (out, extra, copyBtn, copied) verbatim --- -->
+<!-- --- assembled reply: keep the ids (out, extra, copyBtn, copied, sendBtn) verbatim --- -->
 <div class="reply">
   <h2>Your next message — written for you</h2>
-  <textarea id="out" readonly>Nothing selected yet — click through the options above.</textarea>
-  <input id="extra" placeholder="Anything else you noticed? (free note — goes into the reply)">
-  <div>
-    <button class="copy" id="copyBtn">Copy reply</button>
-    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+  <textarea id="out" readonly aria-label="Your next message">Nothing selected yet — click through the options above.</textarea>
+  <input id="extra" aria-label="Free note" placeholder="Anything else you noticed? (free note — goes into the reply)">
+  <div class="actions">
+    <button type="button" class="copy" id="copyBtn">Copy reply</button>
+    <button type="button" class="copy secondary" id="sendBtn" hidden>Send to chat</button>
+    <span class="copied" id="copied" role="status"></span>
   </div>
 </div>
 
 <script>
 (function () {
   'use strict';
-  var traits = {}; // trait text -> {group, mode: 'steal' | 'skip'}
+  var traits = {}; // group|trait -> {trait, group, mode: 'steal' | 'skip'}
   var picks = {};  // question (data-group) -> chosen data-value
+
+  function inQuiz(el) { return !!el.closest('.q[data-answer]'); }
 
   function rebuild() {
     // ADAPT THIS: compose the reply from traits/picks/quiz in the user's
     // language. Drop the blocks your technique doesn't use.
     var lines = [];
 
-    var decisions = Object.keys(picks)
-      .filter(function (g) { return !document.querySelector('.q [data-group="' + g + '"]'); })
-      .map(function (g) { return '- ' + g + ': ' + picks[g]; });
-    if (decisions.length) lines.push('Decisions:\n' + decisions.join('\n'));
+    var groups = [];
+    document.querySelectorAll('.opt[data-group]').forEach(function (o) {
+      if (!inQuiz(o) && groups.indexOf(o.dataset.group) === -1) groups.push(o.dataset.group);
+    });
+    var decided = groups.filter(function (g) { return picks[g]; });
+    var open = groups.filter(function (g) { return !picks[g]; });
+    if (decided.length) lines.push('Decisions:\n' + decided.map(function (g) { return '- ' + g + ': ' + picks[g]; }).join('\n'));
 
     var steals = [], skips = [];
-    Object.keys(traits).forEach(function (t) {
-      var s = traits[t];
-      var label = s.group ? t + ' (' + s.group + ')' : t;
+    Object.keys(traits).forEach(function (k) {
+      var s = traits[k];
+      var label = s.group ? s.trait + ' (' + s.group + ')' : s.trait;
       (s.mode === 'steal' ? steals : skips).push(label);
     });
     if (steals.length) lines.push('Take:\n- ' + steals.join('\n- '));
@@ -168,7 +200,8 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
         if (!sel) return;
         answered++;
         if (sel.dataset.value === q.dataset.answer) right++;
-        else if (q.dataset.review) review.push(q.dataset.review);
+        else if (q.dataset.review && review.indexOf(q.dataset.review) === -1)
+          review.push(q.dataset.review);
       });
       if (answered) {
         lines.push('Quiz: ' + right + '/' + qs.length + ' correct' +
@@ -179,20 +212,26 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
 
     var extra = document.getElementById('extra').value.trim();
     if (extra) lines.push('Also: ' + extra);
-    document.getElementById('out').value =
-      lines.join('\n\n') || 'Nothing selected yet — click through the options above.';
+    if (lines.length && open.length) lines.push('Not answered, you decide:\n- ' + open.join('\n- '));
+    document.getElementById('out').value = lines.length
+      ? 'From "' + document.title + '":\n\n' + lines.join('\n\n')
+      : 'Nothing selected yet — click through the options above.';
   }
 
   // tri-state cycle: neutral -> steal -> skip -> neutral
   document.querySelectorAll('.chip').forEach(function (c) {
     c.addEventListener('click', function () {
-      var t = c.dataset.trait;
-      var cur = traits[t] && traits[t].mode;
+      var key = (c.dataset.group || '') + '|' + c.dataset.trait;
+      var cur = traits[key] && traits[key].mode;
       var next = !cur ? 'steal' : (cur === 'steal' ? 'skip' : null);
       c.classList.remove('steal', 'skip');
-      if (next) { traits[t] = { group: c.dataset.group || '', mode: next }; c.classList.add(next); }
-      else delete traits[t];
+      if (next) {
+        traits[key] = { trait: c.dataset.trait, group: c.dataset.group || '', mode: next };
+        c.classList.add(next);
+      } else delete traits[key];
       c.querySelector('.ic').textContent = next === 'steal' ? '✓' : (next === 'skip' ? '✕' : '·');
+      c.setAttribute('aria-pressed', next ? 'true' : 'false');
+      c.setAttribute('aria-description', next === 'steal' ? 'taken' : (next === 'skip' ? 'rejected' : ''));
       rebuild();
     });
   });
@@ -200,14 +239,27 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
   // pick-one option cards; inside a .q[data-answer] they also grade themselves
   document.querySelectorAll('.opt[data-group]').forEach(function (o) {
     o.addEventListener('click', function () {
-      document.querySelectorAll('.opt[data-group="' + o.dataset.group + '"]')
-        .forEach(function (s) { s.classList.remove('sel', 'right', 'wrong'); });
-      o.classList.add('sel');
-      picks[o.dataset.group] = o.dataset.value || o.textContent.trim();
       var q = o.closest('.q');
+      if (q && q.classList.contains('answered')) return; // first answer counts
+      document.querySelectorAll('.opt[data-group]').forEach(function (s) {
+        if (s.dataset.group !== o.dataset.group) return;
+        s.classList.remove('sel', 'right', 'wrong');
+        s.setAttribute('aria-pressed', 'false');
+      });
+      o.classList.add('sel');
+      o.setAttribute('aria-pressed', 'true');
+      picks[o.dataset.group] = o.dataset.value || o.textContent.trim();
       if (q && q.dataset.answer) {
+        var ok = o.dataset.value === q.dataset.answer;
         q.classList.add('answered');
-        o.classList.add(o.dataset.value === q.dataset.answer ? 'right' : 'wrong');
+        o.classList.add(ok ? 'right' : 'wrong');
+        var why = q.querySelector('.why');
+        if (why) {
+          var v = document.createElement('span');
+          v.className = 'verdict';
+          v.textContent = ok ? 'Correct. ' : 'Not quite. ';
+          why.insertBefore(v, why.firstChild);
+        }
       }
       rebuild();
     });
@@ -215,25 +267,43 @@ assembles itself at the bottom. Copy it and paste it back into the chat.</p>
 
   document.getElementById('extra').addEventListener('input', rebuild);
 
-  // Resilient copy: clipboard API often fails in sandboxed viewers and on
-  // some file:// setups — always fall back to select()+execCommand, and the
-  // textarea stays selectable for a manual copy as the last resort.
+  // Honest copy: clipboard API first; sandboxed viewers often block it, so
+  // fall back to select()+execCommand, and only claim success when one of
+  // them worked. Otherwise leave the text selected and say how to copy.
+  var status = document.getElementById('copied');
+  function say(text, manual) {
+    status.textContent = text;
+    status.classList.toggle('manual', !!manual);
+    clearTimeout(say.t);
+    if (!manual) say.t = setTimeout(function () { status.textContent = ''; }, 2400);
+  }
   document.getElementById('copyBtn').addEventListener('click', function () {
     var out = document.getElementById('out');
-    function done() {
-      var el = document.getElementById('copied');
-      el.classList.add('on');
-      setTimeout(function () { el.classList.remove('on'); }, 2200);
-    }
     function legacy() {
-      out.removeAttribute('readonly'); out.select();
-      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
-      out.setAttribute('readonly', ''); done();
+      var ok = false;
+      out.removeAttribute('readonly'); out.focus(); out.select();
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      out.setAttribute('readonly', '');
+      if (ok) say('Copied — paste it back into the chat');
+      else { out.focus(); out.select(); say('Press Cmd+C or Ctrl+C to copy the selected text', true); }
     }
     if (navigator.clipboard && navigator.clipboard.writeText)
-      navigator.clipboard.writeText(out.value).then(done, legacy);
+      navigator.clipboard.writeText(out.value).then(function () {
+        say('Copied — paste it back into the chat');
+      }, legacy);
     else legacy();
   });
+
+  // Some hosts let a page post a message straight into the chat. Use it when present.
+  var send = typeof window.sendPrompt === 'function' ? window.sendPrompt : null;
+  if (send) {
+    var sendBtn = document.getElementById('sendBtn');
+    sendBtn.hidden = false;
+    sendBtn.addEventListener('click', function () {
+      send(document.getElementById('out').value);
+      say('Sent to the chat');
+    });
+  }
 })();
 </script>
 </body>

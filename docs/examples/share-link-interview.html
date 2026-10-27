@@ -166,7 +166,7 @@ whether a leaked URL is an incident.</p>
   <input id="extra" placeholder="Anything the questions missed? (free note — goes into the reply)">
   <div>
     <button class="copy" id="copyBtn">Copy reply</button>
-    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+    <span class="copied" id="copied" role="status" data-ok="Copied — paste it back into the chat">Copied — paste it back into the chat</span>
   </div>
 </div>
 
@@ -218,13 +218,21 @@ whether a leaked URL is an incident.</p>
     var out = document.getElementById('out');
     function done() {
       var el = document.getElementById('copied');
+      el.textContent = el.dataset.ok || el.textContent;
       el.classList.add('on');
       setTimeout(function () { el.classList.remove('on'); }, 2200);
     }
     function legacy() {
+      var ok = false;
       out.removeAttribute('readonly'); out.select();
-      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
-      out.setAttribute('readonly', ''); done();
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      out.setAttribute('readonly', '');
+      if (ok) { done(); return; }
+      // copy was blocked: leave the text selected and say how to copy it
+      var el = document.getElementById('copied');
+      out.focus(); out.select();
+      el.textContent = 'Press Cmd+C or Ctrl+C to copy the selected text';
+      el.classList.add('on');
     }
     if (navigator.clipboard && navigator.clipboard.writeText)
       navigator.clipboard.writeText(out.value).then(done, legacy);

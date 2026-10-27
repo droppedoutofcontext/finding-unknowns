@@ -28,7 +28,8 @@
   .opt .why-opt{display:block;color:var(--mut);font-size:12.5px;margin-top:4px}
   .preview{border:1px dashed var(--line);border-radius:8px;background:#fff;overflow:hidden;margin:0 0 10px}
   .chip{display:inline-flex;align-items:center;gap:6px;margin:0 6px 8px 0;padding:6px 11px;
-        border-radius:999px;border:1.5px solid var(--line);background:#fff;font-size:12.5px;cursor:pointer}
+        border-radius:999px;border:1.5px solid var(--line);background:#fff;
+        font:inherit;font-size:12.5px;cursor:pointer}
   .chip .ic{font-size:11px;width:13px;text-align:center;color:var(--mut)}
   .chip.steal{border-color:var(--steal);background:var(--steal-bg);color:var(--steal)}
   .chip.skip{border-color:var(--skip);background:var(--skip-bg);color:var(--skip);text-decoration:line-through}
@@ -133,11 +134,11 @@ the chat.</p>
   </table>
 </div></div>
 <div>
-  <span class="chip" data-trait="dark, high-contrast palette" data-group="A"><span class="ic">·</span>dark palette</span>
-  <span class="chip" data-trait="dense KPI strip above the fold" data-group="A"><span class="ic">·</span>dense KPI strip</span>
-  <span class="chip" data-trait="live status dots in the header" data-group="A"><span class="ic">·</span>status dots</span>
-  <span class="chip" data-trait="monospace numerals and tables" data-group="A"><span class="ic">·</span>mono numerals</span>
-  <span class="chip" data-trait="SLA countdowns on every row" data-group="A"><span class="ic">·</span>SLA countdowns</span>
+  <button type="button" class="chip" data-trait="dark, high-contrast palette" data-group="A"><span class="ic">·</span>dark palette</button>
+  <button type="button" class="chip" data-trait="dense KPI strip above the fold" data-group="A"><span class="ic">·</span>dense KPI strip</button>
+  <button type="button" class="chip" data-trait="live status dots in the header" data-group="A"><span class="ic">·</span>status dots</button>
+  <button type="button" class="chip" data-trait="monospace numerals and tables" data-group="A"><span class="ic">·</span>mono numerals</button>
+  <button type="button" class="chip" data-trait="SLA countdowns on every row" data-group="A"><span class="ic">·</span>SLA countdowns</button>
 </div>
 
 <h2>B — editorial</h2>
@@ -154,10 +155,10 @@ the chat.</p>
   integration outage on Tuesday.</p>
 </div></div>
 <div>
-  <span class="chip" data-trait="serif headings on a warm paper background" data-group="B"><span class="ic">·</span>serif on paper</span>
-  <span class="chip" data-trait="a few large numbers instead of many small ones" data-group="B"><span class="ic">·</span>large sparse numbers</span>
-  <span class="chip" data-trait="one written sentence of analysis under the numbers" data-group="B"><span class="ic">·</span>narrative caption</span>
-  <span class="chip" data-trait="generous whitespace, no boxes or borders" data-group="B"><span class="ic">·</span>whitespace over boxes</span>
+  <button type="button" class="chip" data-trait="serif headings on a warm paper background" data-group="B"><span class="ic">·</span>serif on paper</button>
+  <button type="button" class="chip" data-trait="a few large numbers instead of many small ones" data-group="B"><span class="ic">·</span>large sparse numbers</button>
+  <button type="button" class="chip" data-trait="one written sentence of analysis under the numbers" data-group="B"><span class="ic">·</span>narrative caption</button>
+  <button type="button" class="chip" data-trait="generous whitespace, no boxes or borders" data-group="B"><span class="ic">·</span>whitespace over boxes</button>
 </div>
 
 <h2>C — card board</h2>
@@ -176,10 +177,10 @@ the chat.</p>
   </div>
 </div></div>
 <div>
-  <span class="chip" data-trait="tickets as cards in status columns" data-group="C"><span class="ic">·</span>cards in columns</span>
-  <span class="chip" data-trait="colored category tags on each card" data-group="C"><span class="ic">·</span>colored tags</span>
-  <span class="chip" data-trait="soft shadows and rounded corners" data-group="C"><span class="ic">·</span>soft shadows</span>
-  <span class="chip" data-trait="counts in the column headers" data-group="C"><span class="ic">·</span>column counts</span>
+  <button type="button" class="chip" data-trait="tickets as cards in status columns" data-group="C"><span class="ic">·</span>cards in columns</button>
+  <button type="button" class="chip" data-trait="colored category tags on each card" data-group="C"><span class="ic">·</span>colored tags</button>
+  <button type="button" class="chip" data-trait="soft shadows and rounded corners" data-group="C"><span class="ic">·</span>soft shadows</button>
+  <button type="button" class="chip" data-trait="counts in the column headers" data-group="C"><span class="ic">·</span>column counts</button>
 </div>
 
 <h2>D — terminal</h2>
@@ -196,9 +197,9 @@ P2   #4809 export missing rows           2h    3h
 </pre>
 </div></div>
 <div>
-  <span class="chip" data-trait="everything is one monospace text block" data-group="D"><span class="ic">·</span>pure text</span>
-  <span class="chip" data-trait="single accent color for what matters now" data-group="D"><span class="ic">·</span>one accent color</span>
-  <span class="chip" data-trait="truncate aggressively, offer a 'more' escape" data-group="D"><span class="ic">·</span>aggressive truncation</span>
+  <button type="button" class="chip" data-trait="everything is one monospace text block" data-group="D"><span class="ic">·</span>pure text</button>
+  <button type="button" class="chip" data-trait="single accent color for what matters now" data-group="D"><span class="ic">·</span>one accent color</button>
+  <button type="button" class="chip" data-trait="truncate aggressively, offer a 'more' escape" data-group="D"><span class="ic">·</span>aggressive truncation</button>
 </div>
 
 <div class="reply">
@@ -207,7 +208,7 @@ P2   #4809 export missing rows           2h    3h
   <input id="extra" placeholder="Anything else you noticed? (free note — goes into the reply)">
   <div>
     <button class="copy" id="copyBtn">Copy reply</button>
-    <span class="copied" id="copied">Copied — paste it back into the chat</span>
+    <span class="copied" id="copied" role="status" data-ok="Copied — paste it back into the chat">Copied — paste it back into the chat</span>
   </div>
 </div>
 
@@ -264,13 +265,21 @@ P2   #4809 export missing rows           2h    3h
     var out = document.getElementById('out');
     function done() {
       var el = document.getElementById('copied');
+      el.textContent = el.dataset.ok || el.textContent;
       el.classList.add('on');
       setTimeout(function () { el.classList.remove('on'); }, 2200);
     }
     function legacy() {
+      var ok = false;
       out.removeAttribute('readonly'); out.select();
-      try { document.execCommand('copy'); } catch (e) { /* manual copy remains */ }
-      out.setAttribute('readonly', ''); done();
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      out.setAttribute('readonly', '');
+      if (ok) { done(); return; }
+      // copy was blocked: leave the text selected and say how to copy it
+      var el = document.getElementById('copied');
+      out.focus(); out.select();
+      el.textContent = 'Press Cmd+C or Ctrl+C to copy the selected text';
+      el.classList.add('on');
     }
     if (navigator.clipboard && navigator.clipboard.writeText)
       navigator.clipboard.writeText(out.value).then(done, legacy);
