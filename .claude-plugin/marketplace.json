@@ -7,7 +7,7 @@
     {
       "name": "finding-unknowns",
       "source": "./",
-      "description": "Surface hidden requirements with small interactive HTML artifacts before, during, and after implementation."
+      "description": "Surface hidden requirements with small interactive HTML pages that write your next prompt."
     }
   ]
 }

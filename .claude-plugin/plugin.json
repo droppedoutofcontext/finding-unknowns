@@ -1,12 +1,20 @@
 {
   "name": "finding-unknowns",
-  "description": "Surface hidden requirements with small interactive HTML artifacts — blindspot passes, interviews, design-direction pickers, tweakable plans, merge quizzes. Packaging of Thariq Shihipar's \"A Field Guide to Fable: Finding Your Unknowns\" workflow as a Claude Code skill.",
-  "version": "0.2.0",
+  "description": "Turns vague prompts into small interactive HTML pages: point at what you recognize, and the page writes your next prompt. Design directions, interviews, blindspot passes, tweakable plans, merge quizzes.",
+  "version": "0.3.0",
   "author": {
     "name": "droppedoutofcontext"
   },
-  "homepage": "https://github.com/droppedoutofcontext/finding-unknowns",
+  "homepage": "https://droppedoutofcontext.github.io/finding-unknowns/",
   "repository": "https://github.com/droppedoutofcontext/finding-unknowns",
   "license": "MIT",
-  "keywords": ["skill", "unknowns", "planning", "interview", "html-artifacts", "prompting"]
+  "keywords": [
+    "skill",
+    "requirements",
+    "planning",
+    "interview",
+    "design-directions",
+    "html-artifacts",
+    "prompting"
+  ]
 }
